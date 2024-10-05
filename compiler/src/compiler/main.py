@@ -33,7 +33,7 @@ def lex_comment(cursor, content):
 def lex_exit(cursor, content):
     token = Token(
         kind = TokenKind.EXIT,
-        text = content[begin:cursor + 4]
+        text = content[cursor:cursor + 4]
     )
     return cursor + 4, token
 
