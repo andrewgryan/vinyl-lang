@@ -30,11 +30,22 @@ def lex_comment(cursor, content):
     return cursor + 1, token
 
 
+def lex_exit(cursor, content):
+    token = Token(
+        kind = TokenKind.EXIT,
+        text = content[begin:cursor + 4]
+    )
+    return cursor + 4, token
+
+
 def lex(content):
     cursor = 0
     while (cursor < len(content)):
         if content[cursor] == "#":
             cursor, token = lex_comment(cursor, content)
+            print(token)
+        elif content[cursor:cursor + 4] == "exit":
+            cursor, token = lex_exit(cursor, content)
             print(token)
         else:
             cursor += 1
