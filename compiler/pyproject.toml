@@ -1,0 +1,29 @@
+[project]
+name = "compiler"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "andrewgryan", email = "andrew.ryan@metoffice.gov.uk"},
+]
+dependencies = [
+    "typer>=0.12.5",
+]
+requires-python = ">=3.10"
+readme = "README.md"
+license = {text = "MIT"}
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.3.3",
+]
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[tool.pdm]
+distribution = true
+
+
+[tool.pdm.scripts]
+compile = "typer compiler.main run"
