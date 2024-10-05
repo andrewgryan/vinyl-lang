@@ -1,8 +1,57 @@
 import subprocess
+from dataclasses import dataclass
+from enum import Enum
+
+
+class TokenKind(Enum):
+    COMMENT = 1
+    LEFT_PAREN = 2
+    RIGHT_PAREN = 3
+    SEMICOLON = 4
+    EXIT = 5
+    INT = 6
+
+
+@dataclass
+class Token:
+    kind: TokenKind
+    text: str
+
+def lex_comment(cursor, content):
+    begin = cursor
+    while (cursor < len(content)):
+        if content[cursor] == "\n":
+            break
+        cursor += 1
+    token = Token(
+        kind = TokenKind.COMMENT,
+        text = content[begin:cursor + 1]
+    )
+    return cursor + 1, token
+
+
+def lex(content):
+    cursor = 0
+    while (cursor < len(content)):
+        if content[cursor] == "#":
+            cursor, token = lex_comment(cursor, content)
+            print(token)
+        else:
+            cursor += 1
+
+def parse(content: str):
+    # TODO: Lex, parse
+    tokens = lex(content)
+    return 42
+
 def main(src: str):
     print(f"compiling: {src}")
-    # TODO: Lex, parse and code gen
-    code = 42
+    with open(src, "r") as stream:
+        content = stream.read()
+
+    code = parse(content)
+
+    # TODO: code gen
     content = f"""
 .global _start
 .section .text
