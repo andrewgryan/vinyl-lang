@@ -2,13 +2,14 @@ import subprocess
 def main(src: str):
     print(f"compiling: {src}")
     # TODO: Lex, parse and code gen
-    content = """
+    code = 42
+    content = f"""
 .global _start
 .section .text
 
 _start:
         mov x8, #0x5d
-        mov x0, #0x41
+        mov x0, #{hex(code)}
         svc 0
 """
     with open("vinyl.asm", "w") as stream:
