@@ -29,6 +29,18 @@ def lex_comment(cursor, content):
     )
     return cursor + 1, token
 
+def lex_int(cursor, content):
+    begin = cursor
+    while (cursor < len(content)):
+        if content[cursor].isdigit():
+            cursor += 1
+        else:
+            break
+    token = Token(
+        kind = TokenKind.INT,
+        text = content[begin:cursor]
+    )
+    return cursor, token
 
 def lex_exit(cursor, content):
     token = Token(
@@ -43,16 +55,41 @@ def lex(content):
     while (cursor < len(content)):
         if content[cursor] == "#":
             cursor, token = lex_comment(cursor, content)
-            print(token)
+            yield token
+        elif content[cursor].isdigit():
+            cursor, token = lex_int(cursor, content)
+            yield token
         elif content[cursor:cursor + 4] == "exit":
             cursor, token = lex_exit(cursor, content)
-            print(token)
+            yield token
+        elif content[cursor] == "(":
+            token = Token(
+                kind=TokenKind.LEFT_PAREN,
+                text="("
+            )
+            yield token
+            cursor += 1
+        elif content[cursor] == ")":
+            token = Token(
+                kind=TokenKind.RIGHT_PAREN,
+                text=")"
+            )
+            yield token
+            cursor += 1
+        elif content[cursor] == ";":
+            token = Token(
+                kind=TokenKind.SEMICOLON,
+                text=";"
+            )
+            yield token
+            cursor += 1
         else:
             cursor += 1
 
 def parse(content: str):
     # TODO: Lex, parse
-    tokens = lex(content)
+    for token in lex(content):
+        print(token)
     return 42
 
 def main(src: str):
