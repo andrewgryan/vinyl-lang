@@ -87,12 +87,12 @@ def lex(content):
             cursor += 1
 
 @dataclass
-class IntNode:
+class NodeInt:
     token: Token
 
 @dataclass
 class ExitNode:
-    status: IntNode
+    status: NodeInt
 
 
 def parse(content: str):
@@ -111,12 +111,19 @@ def parse(content: str):
             tokens[cursor + i].kind == kind
             for i, kind in enumerate(rule)
             ):
-            int_lit = tokens[cursor + 2]
-            tree = ExitNode(status=IntNode(token=int_lit))
+            status, _ = parse_expression(tokens, cursor + 2)
+            tree = ExitNode(status=status)
             break
         else:
             cursor += 1
     return tree
+
+
+def parse_expression(tokens, cursor):
+    if tokens[cursor].kind == TokenKind.INT:
+        return NodeInt(tokens[cursor]), cursor + 1
+    else:
+        return None, cursor
 
 
 def code_gen(tree):
