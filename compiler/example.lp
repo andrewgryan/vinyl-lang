@@ -1,2 +1,3 @@
 # Vinyl lang
-exit(0);
+exit(124);
+5

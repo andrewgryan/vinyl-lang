@@ -86,20 +86,41 @@ def lex(content):
         else:
             cursor += 1
 
+@dataclass
+class IntNode:
+    token: Token
+
+@dataclass
+class ExitNode:
+    status: IntNode
+
+
 def parse(content: str):
-    # TODO: Lex, parse
-    for token in lex(content):
-        print(token)
-    return 42
+    rule = (
+        TokenKind.EXIT,
+        TokenKind.LEFT_PAREN,
+        TokenKind.INT,
+        TokenKind.RIGHT_PAREN,
+        TokenKind.SEMICOLON,
+    )
+    tokens = list(lex(content))
+    cursor = 0
+    tree = None
+    while (cursor < len(tokens)):
+        if all(
+            tokens[cursor + i].kind == kind
+            for i, kind in enumerate(rule)
+            ):
+            int_lit = tokens[cursor + 2]
+            tree = ExitNode(status=IntNode(token=int_lit))
+            break
+        else:
+            cursor += 1
+    return tree
 
-def main(src: str):
-    print(f"compiling: {src}")
-    with open(src, "r") as stream:
-        content = stream.read()
 
-    code = parse(content)
-
-    # TODO: code gen
+def code_gen(tree):
+    code = int(tree.status.token.text)
     content = f"""
 .global _start
 .section .text
@@ -109,6 +130,17 @@ _start:
         mov x0, #{hex(code)}
         svc 0
 """
+    return content
+
+
+def main(src: str):
+    print(f"compiling: {src}")
+    with open(src, "r") as stream:
+        content = stream.read()
+
+    ast = parse(content)
+
+    content = code_gen(ast)
     with open("vinyl.asm", "w") as stream:
         stream.write(content)
     # TODO: Compile and link asm
