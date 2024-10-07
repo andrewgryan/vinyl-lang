@@ -91,8 +91,12 @@ class NodeInt:
     token: Token
 
 @dataclass
-class ExitNode:
+class NodeExit:
     status: NodeInt
+
+@dataclass
+class NodeProgram:
+    statements: list[NodeExit]
 
 
 def parse(content: str):
@@ -105,18 +109,19 @@ def parse(content: str):
     )
     tokens = list(lex(content))
     cursor = 0
-    tree = None
+    statements = []
     while (cursor < len(tokens)):
         if all(
             tokens[cursor + i].kind == kind
             for i, kind in enumerate(rule)
             ):
             status, _ = parse_expression(tokens, cursor + 2)
-            tree = ExitNode(status=status)
-            break
+            tree = NodeExit(status=status)
+            statements.append(tree)
+            cursor += len(rule)
         else:
             cursor += 1
-    return tree
+    return NodeProgram(statements)
 
 
 def parse_expression(tokens, cursor):
@@ -126,13 +131,16 @@ def parse_expression(tokens, cursor):
         return None, cursor
 
 
-def code_gen(tree):
-    code = int(tree.status.token.text)
-    content = f"""
+def code_gen(program):
+    content = """
 .global _start
 .section .text
 
 _start:
+"""
+    for statement in program.statements:
+        code = int(statement.status.token.text)
+        content += f"""
         mov x8, #0x5d
         mov x0, #{hex(code)}
         svc 0
