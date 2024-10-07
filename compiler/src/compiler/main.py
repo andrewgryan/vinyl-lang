@@ -100,6 +100,19 @@ class NodeProgram:
 
 
 def parse(content: str):
+    tokens = list(lex(content))
+    cursor = 0
+    statements = []
+    while (cursor < len(tokens)):
+        statement, cursor = parse_exit(tokens, cursor)
+        if statement:
+            statements.append(statement)
+        else:
+            cursor += 1
+    return NodeProgram(statements)
+
+
+def parse_exit(tokens, cursor):
     rule = (
         TokenKind.EXIT,
         TokenKind.LEFT_PAREN,
@@ -107,21 +120,12 @@ def parse(content: str):
         TokenKind.RIGHT_PAREN,
         TokenKind.SEMICOLON,
     )
-    tokens = list(lex(content))
-    cursor = 0
-    statements = []
-    while (cursor < len(tokens)):
-        if all(
-            tokens[cursor + i].kind == kind
-            for i, kind in enumerate(rule)
-            ):
-            status, _ = parse_expression(tokens, cursor + 2)
-            tree = NodeExit(status=status)
-            statements.append(tree)
-            cursor += len(rule)
-        else:
-            cursor += 1
-    return NodeProgram(statements)
+    if all(tokens[cursor + i].kind == kind
+           for i, kind in enumerate(rule)):
+        status, _ = parse_expression(tokens, cursor + 2)
+        return NodeExit(status=status), cursor + len(rule)
+    else:
+        return None, cursor
 
 
 def parse_expression(tokens, cursor):
