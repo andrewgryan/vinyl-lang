@@ -10,6 +10,9 @@ class TokenKind(Enum):
     SEMICOLON = 4
     EXIT = 5
     INT = 6
+    LET = 7
+    EQUAL = 8
+    IDENTIFIER = 9
 
 
 @dataclass
@@ -49,6 +52,14 @@ def lex_exit(cursor, content):
     )
     return cursor + 4, token
 
+def lex_let(cursor, content):
+    length = len("let")
+    token = Token(
+        kind = TokenKind.LET,
+        text = content[cursor:cursor + length]
+    )
+    return cursor + length, token
+
 
 def lex(content):
     cursor = 0
@@ -62,6 +73,16 @@ def lex(content):
         elif content[cursor:cursor + 4] == "exit":
             cursor, token = lex_exit(cursor, content)
             yield token
+        elif content[cursor:].startswith("let"):
+            cursor, token = lex_let(cursor, content)
+            yield token
+        elif content[cursor] == "=":
+            token = Token(
+                kind=TokenKind.EQUAL,
+                text="="
+            )
+            yield token
+            cursor += 1
         elif content[cursor] == "(":
             token = Token(
                 kind=TokenKind.LEFT_PAREN,
