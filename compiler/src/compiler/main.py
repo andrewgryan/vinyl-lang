@@ -135,7 +135,14 @@ def parse_expression(tokens, cursor):
         return None, cursor
 
 
-def code_gen(program):
+def code_gen(program, arch):
+    if arch == Arch.aarch64:
+        return code_gen_aaarch64(program)
+    else:
+        return code_gen_x86_64(program)
+
+
+def code_gen_aaarch64(program):
     content = """
 .global _start
 .section .text
@@ -152,30 +159,56 @@ _start:
     return content
 
 
-def main(src: str):
+def code_gen_x86_64(program):
+    content = """
+    .text
+    .globl _start
+
+_start:
+"""
+    for statement in program.statements:
+        code = int(statement.status.token.text)
+        content += f"""
+        mov $60, %rax
+        mov ${code}, %rdi
+        syscall
+"""
+    return content
+
+
+class Arch(str, Enum):
+    x86_64 = "x86_64"
+    aarch64 = "aarch64"
+
+
+def main(src: str, arch: Arch = Arch.aarch64, gcc_version: int = 11):
     print(f"compiling: {src}")
     with open(src, "r") as stream:
         content = stream.read()
 
+    # Convert vinyl to assembly
     ast = parse(content)
 
-    content = code_gen(ast)
+    content = code_gen(ast, arch)
     with open("vinyl.asm", "w") as stream:
         stream.write(content)
-    # TODO: Compile and link asm
+
+    # Compile
     command = [
-    "aarch64-linux-gnu-as",
+    f"{arch.value}-linux-gnu-as",
      "vinyl.asm",
       "-o",
        "vinyl.o"
     ]
-    subprocess.call(command)
+    subprocess.check_call(command)
+
+    # Link
     command = [
-        "aarch64-linux-gnu-gcc-11",
+        f"{arch.value}-linux-gnu-gcc-{gcc_version}",
         "vinyl.o",
         "-o",
         "vinyl.exe",
         "-nostdlib",
         "-static"
     ]
-    subprocess.call(command)
+    subprocess.check_call(command)
