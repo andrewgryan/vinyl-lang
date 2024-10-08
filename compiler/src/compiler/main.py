@@ -45,6 +45,26 @@ def lex_int(cursor, content):
     )
     return cursor, token
 
+def lex_identifier(cursor, content):
+    begin = cursor
+
+    # First char [a-zA-Z]
+    if not content[begin].isalpha():
+        return cursor, None
+    
+    # All other chars [a-zA-Z0-9]
+    while (cursor < len(content)):
+        if content[cursor].isalnum():
+            cursor += 1
+        else:
+            break
+
+    token = Token(
+        kind = TokenKind.IDENTIFIER,
+        text = content[begin:cursor]
+    )
+    return cursor, token
+
 def lex_exit(cursor, content):
     token = Token(
         kind = TokenKind.EXIT,
@@ -75,6 +95,9 @@ def lex(content):
             yield token
         elif content[cursor:].startswith("let"):
             cursor, token = lex_let(cursor, content)
+            yield token
+        elif content[cursor].isalpha():
+            cursor, token = lex_identifier(cursor, content)
             yield token
         elif content[cursor] == "=":
             token = Token(
@@ -122,6 +145,8 @@ class NodeProgram:
 
 def parse(content: str):
     tokens = list(lex(content))
+    for token in tokens:
+        print(token)
     cursor = 0
     statements = []
     while (cursor < len(tokens)):
