@@ -139,20 +139,28 @@ class NodeExit:
     status: NodeInt
 
 @dataclass
+class NodeLet:
+    identifier: Token
+    value: Token
+
+@dataclass
 class NodeProgram:
     statements: list[NodeExit]
 
 
 def parse(content: str):
     tokens = list(lex(content))
-    for token in tokens:
-        print(token)
     cursor = 0
     statements = []
     while (cursor < len(tokens)):
         statement, cursor = parse_exit(tokens, cursor)
         if statement:
             statements.append(statement)
+            continue
+        statement, cursor = parse_let(tokens, cursor)
+        if statement:
+            statements.append(statement)
+            continue
         else:
             cursor += 1
     return NodeProgram(statements)
@@ -174,6 +182,22 @@ def parse_exit(tokens, cursor):
         return None, cursor
 
 
+def parse_let(tokens, cursor):
+    rule = (
+        TokenKind.LET,
+        TokenKind.IDENTIFIER,
+        TokenKind.EQUAL,
+        TokenKind.INT,
+        TokenKind.SEMICOLON,
+    )
+    kinds = tuple(token.kind for token in tokens[cursor:cursor + 5])
+    if rule == kinds:
+        node = NodeLet(tokens[cursor + 1], tokens[cursor + 3])
+        return node, cursor + 5
+    else:
+        return None, cursor
+
+
 def parse_expression(tokens, cursor):
     if tokens[cursor].kind == TokenKind.INT:
         return NodeInt(tokens[cursor]), cursor + 1
@@ -182,6 +206,8 @@ def parse_expression(tokens, cursor):
 
 
 def code_gen(program, arch):
+    for statement in program.statements:
+        print(statement)
     if arch == Arch.aarch64:
         return code_gen_aaarch64(program)
     else:
@@ -196,8 +222,9 @@ def code_gen_aaarch64(program):
 _start:
 """
     for statement in program.statements:
-        code = int(statement.status.token.text)
-        content += f"""
+        if isinstance(statement, NodeExit):
+            code = int(statement.status.token.text)
+            content += f"""
         mov x8, #0x5d
         mov x0, #{hex(code)}
         svc 0
