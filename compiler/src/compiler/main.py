@@ -32,6 +32,8 @@ class NodeProgram:
 
 def parse(content: str):
     tokens = list(lex(content))
+    for token in tokens:
+        print(token)
     cursor = 0
     statements = []
     while cursor < len(tokens):
@@ -53,10 +55,10 @@ def exit(status: str):
 
 
 def parse_exit(tokens, cursor):
-    if ((tokens[0].kind == TokenKind.EXIT) and
-        (tokens[1].kind == TokenKind.LEFT_PAREN) and
-        (tokens[3].kind == TokenKind.RIGHT_PAREN) and
-        (tokens[4].kind == TokenKind.SEMICOLON)):
+    if ((tokens[cursor + 0].kind == TokenKind.EXIT) and
+        (tokens[cursor + 1].kind == TokenKind.LEFT_PAREN) and
+        (tokens[cursor + 3].kind == TokenKind.RIGHT_PAREN) and
+        (tokens[cursor + 4].kind == TokenKind.SEMICOLON)):
         status, cursor = parse_expression(tokens, cursor + 2)
         return NodeExit(status=status), cursor + 2
     else:
@@ -120,11 +122,19 @@ _start:
 """
 
     for statement in program.statements:
+        print(statement)
         if isinstance(statement, NodeExit):
-            code = int(statement.status.token.text)
-            content += f"""
+            if isinstance(statement.status, NodeInt):
+                code = int(statement.status.token.text)
+                content += f"""
         mov x8, #0x5d
         mov x0, #{hex(code)}
+        svc 0
+"""
+            else:
+                content += f"""
+        mov x8, #0x5d
+        ldr x0, [sp, #{hex(8)}]
         svc 0
 """
         elif isinstance(statement, NodeLet):
