@@ -100,6 +100,19 @@ def code_gen_aaarch64(program):
 
 _start:
 """
+    # Stack allocate space for variables
+    declarations = []
+    for statement in program.statements:
+        if isinstance(statement, NodeLet):
+            declarations.append(statement.identifier.text)
+
+    # Decrement stack pointer
+    size_in_bytes = 8 * len(declarations)
+    if size_in_bytes > 0:
+        content += f"""
+        sub sp, sp, #{hex(size_in_bytes)}
+"""
+
     for statement in program.statements:
         if isinstance(statement, NodeExit):
             code = int(statement.status.token.text)
@@ -107,6 +120,19 @@ _start:
         mov x8, #0x5d
         mov x0, #{hex(code)}
         svc 0
+"""
+        elif isinstance(statement, NodeLet):
+            index = declarations.index(statement.identifier.text)
+            value = int(statement.value.text)
+            content += f"""
+        mov     w0, #{hex(value)}
+        str     w0, [sp, #{hex(index * 8)}]
+"""
+
+    # Restore stack pointer
+    if size_in_bytes > 0:
+        content += f"""
+        add sp, sp, #{hex(size_in_bytes)}
 """
     return content
 
