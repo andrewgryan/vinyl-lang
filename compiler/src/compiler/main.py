@@ -10,8 +10,13 @@ class NodeInt:
 
 
 @dataclass
+class NodeIdentifier:
+    token: Token
+
+
+@dataclass
 class NodeExit:
-    status: NodeInt
+    status: NodeInt | NodeIdentifier
 
 
 @dataclass
@@ -48,19 +53,12 @@ def exit(status: str):
 
 
 def parse_exit(tokens, cursor):
-    rule = (
-        TokenKind.EXIT,
-        TokenKind.LEFT_PAREN,
-        TokenKind.INT,
-        TokenKind.RIGHT_PAREN,
-        TokenKind.SEMICOLON,
-    )
-    if all(
-        tokens[cursor + i].kind == kind
-        for i, kind in enumerate(rule)
-    ):
-        status, _ = parse_expression(tokens, cursor + 2)
-        return NodeExit(status=status), cursor + len(rule)
+    if ((tokens[0].kind == TokenKind.EXIT) and
+        (tokens[1].kind == TokenKind.LEFT_PAREN) and
+        (tokens[3].kind == TokenKind.RIGHT_PAREN) and
+        (tokens[4].kind == TokenKind.SEMICOLON)):
+        status, cursor = parse_expression(tokens, cursor + 2)
+        return NodeExit(status=status), cursor + 2
     else:
         return None, cursor
 
@@ -88,6 +86,8 @@ def parse_let(tokens, cursor):
 def parse_expression(tokens, cursor):
     if tokens[cursor].kind == TokenKind.INT:
         return NodeInt(tokens[cursor]), cursor + 1
+    elif tokens[cursor].kind == TokenKind.IDENTIFIER:
+        return NodeIdentifier(tokens[cursor]), cursor + 1
     else:
         return None, cursor
 
