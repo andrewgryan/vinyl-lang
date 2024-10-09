@@ -19,6 +19,14 @@ class Token:
     kind: TokenKind
     text: str
 
+    @classmethod
+    def identifier(cls, text: str):
+        return cls(kind=TokenKind.IDENTIFIER, text=text)
+
+    @classmethod
+    def int(cls, text: str):
+        return cls(kind=TokenKind.INT, text=text)
+
 
 def lex_comment(cursor, content):
     begin = cursor
@@ -39,7 +47,7 @@ def lex_int(cursor, content):
             cursor += 1
         else:
             break
-    token = Token(kind=TokenKind.INT, text=content[begin:cursor])
+    token = Token.int(content[begin:cursor])
     return cursor, token
 
 
@@ -57,9 +65,7 @@ def lex_identifier(cursor, content):
         else:
             break
 
-    token = Token(
-        kind=TokenKind.IDENTIFIER, text=content[begin:cursor]
-    )
+    token = Token.identifier(content[begin:cursor])
     return cursor, token
 
 

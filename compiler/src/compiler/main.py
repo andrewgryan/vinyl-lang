@@ -43,6 +43,10 @@ def parse(content: str):
     return NodeProgram(statements)
 
 
+def exit(status: str):
+    return NodeExit(NodeInt(Token.int(status)))
+
+
 def parse_exit(tokens, cursor):
     rule = (
         TokenKind.EXIT,
@@ -60,8 +64,8 @@ def parse_exit(tokens, cursor):
     else:
         return None, cursor
 
-def let(identifier, value):
-    return NodeLet(Token(kind=TokenKind.IDENTIFIER, text=identifier), Token(kind=TokenKind.INT, text=value))
+def let(identifier: str, value: str):
+    return NodeLet(Token.identifier(identifier), Token.int(value))
 
 def parse_let(tokens, cursor):
     rule = (
