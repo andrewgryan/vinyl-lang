@@ -60,6 +60,8 @@ def parse_exit(tokens, cursor):
     else:
         return None, cursor
 
+def let(identifier, value):
+    return NodeLet(Token(kind=TokenKind.IDENTIFIER, text=identifier), Token(kind=TokenKind.INT, text=value))
 
 def parse_let(tokens, cursor):
     rule = (

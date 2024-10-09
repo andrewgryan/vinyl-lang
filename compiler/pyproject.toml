@@ -31,3 +31,4 @@ distribution = true
 [tool.pdm.scripts]
 compile = "typer compiler.main run"
 fmt = "black --line-length 65 ."
+test = "pytest"
