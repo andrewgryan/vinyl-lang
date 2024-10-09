@@ -17,7 +17,7 @@ test = [
     "pytest>=8.3.3",
 ]
 dev = [
-    "ruff>=0.6.9",
+    "black>=24.10.0",
 ]
 [build-system]
 requires = ["pdm-backend"]
@@ -30,3 +30,4 @@ distribution = true
 
 [tool.pdm.scripts]
 compile = "typer compiler.main run"
+fmt = "black --line-length 70 ."

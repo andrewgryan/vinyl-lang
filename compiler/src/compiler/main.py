@@ -8,14 +8,17 @@ from compiler.lexer import lex, Token, TokenKind
 class NodeInt:
     token: Token
 
+
 @dataclass
 class NodeExit:
     status: NodeInt
+
 
 @dataclass
 class NodeLet:
     identifier: Token
     value: Token
+
 
 @dataclass
 class NodeProgram:
@@ -26,7 +29,7 @@ def parse(content: str):
     tokens = list(lex(content))
     cursor = 0
     statements = []
-    while (cursor < len(tokens)):
+    while cursor < len(tokens):
         statement, cursor = parse_exit(tokens, cursor)
         if statement:
             statements.append(statement)
@@ -48,8 +51,9 @@ def parse_exit(tokens, cursor):
         TokenKind.RIGHT_PAREN,
         TokenKind.SEMICOLON,
     )
-    if all(tokens[cursor + i].kind == kind
-           for i, kind in enumerate(rule)):
+    if all(
+        tokens[cursor + i].kind == kind for i, kind in enumerate(rule)
+    ):
         status, _ = parse_expression(tokens, cursor + 2)
         return NodeExit(status=status), cursor + len(rule)
     else:
@@ -64,7 +68,7 @@ def parse_let(tokens, cursor):
         TokenKind.INT,
         TokenKind.SEMICOLON,
     )
-    kinds = tuple(token.kind for token in tokens[cursor:cursor + 5])
+    kinds = tuple(token.kind for token in tokens[cursor : cursor + 5])
     if rule == kinds:
         node = NodeLet(tokens[cursor + 1], tokens[cursor + 3])
         return node, cursor + 5
@@ -169,10 +173,10 @@ def main(src: str, arch: Arch = Arch.aarch64, gcc_version: int = 11):
 
     # Compile
     command = [
-    f"{arch.value}-linux-gnu-as",
-     "vinyl.asm",
-      "-o",
-       "vinyl.o"
+        f"{arch.value}-linux-gnu-as",
+        "vinyl.asm",
+        "-o",
+        "vinyl.o",
     ]
     subprocess.check_call(command)
 
@@ -183,6 +187,6 @@ def main(src: str, arch: Arch = Arch.aarch64, gcc_version: int = 11):
         "-o",
         "vinyl.exe",
         "-nostdlib",
-        "-static"
+        "-static",
     ]
     subprocess.check_call(command)
