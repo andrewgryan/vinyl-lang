@@ -110,7 +110,7 @@ _start:
     size_in_bytes = 8 * len(declarations)
     if size_in_bytes > 0:
         content += f"""
-        sub sp, sp, #{hex(size_in_bytes)}
+        sub sp, sp, #{hex(size_in_bytes + 8)}
 """
 
     for statement in program.statements:
@@ -124,15 +124,16 @@ _start:
         elif isinstance(statement, NodeLet):
             index = declarations.index(statement.identifier.text)
             value = int(statement.value.text)
+            offset = size_in_bytes
             content += f"""
         mov     w0, #{hex(value)}
-        str     w0, [sp, #{hex(index * 8)}]
+        str     w0, [sp, #{hex(offset)}]
 """
 
     # Restore stack pointer
     if size_in_bytes > 0:
         content += f"""
-        add sp, sp, #{hex(size_in_bytes)}
+        add sp, sp, #{hex(size_in_bytes + 8)}
 """
     return content
 
