@@ -52,7 +52,8 @@ def parse_exit(tokens, cursor):
         TokenKind.SEMICOLON,
     )
     if all(
-        tokens[cursor + i].kind == kind for i, kind in enumerate(rule)
+        tokens[cursor + i].kind == kind
+        for i, kind in enumerate(rule)
     ):
         status, _ = parse_expression(tokens, cursor + 2)
         return NodeExit(status=status), cursor + len(rule)
@@ -68,7 +69,9 @@ def parse_let(tokens, cursor):
         TokenKind.INT,
         TokenKind.SEMICOLON,
     )
-    kinds = tuple(token.kind for token in tokens[cursor : cursor + 5])
+    kinds = tuple(
+        token.kind for token in tokens[cursor : cursor + 5]
+    )
     if rule == kinds:
         node = NodeLet(tokens[cursor + 1], tokens[cursor + 3])
         return node, cursor + 5
@@ -159,7 +162,9 @@ class Arch(str, Enum):
     aarch64 = "aarch64"
 
 
-def main(src: str, arch: Arch = Arch.aarch64, gcc_version: int = 11):
+def main(
+    src: str, arch: Arch = Arch.aarch64, gcc_version: int = 11
+):
     print(f"compiling: {src}")
     with open(src, "r") as stream:
         content = stream.read()

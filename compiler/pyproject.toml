@@ -30,4 +30,4 @@ distribution = true
 
 [tool.pdm.scripts]
 compile = "typer compiler.main run"
-fmt = "black --line-length 70 ."
+fmt = "black --line-length 65 ."

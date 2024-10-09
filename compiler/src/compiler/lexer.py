@@ -73,7 +73,8 @@ def lex_exit(cursor, content):
 def lex_let(cursor, content):
     length = len("let")
     token = Token(
-        kind=TokenKind.LET, text=content[cursor : cursor + length]
+        kind=TokenKind.LET,
+        text=content[cursor : cursor + length],
     )
     return cursor + length, token
 
