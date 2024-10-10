@@ -131,9 +131,11 @@ _start:
         svc 0
 """
             else:
+                index = declarations.index(statement.status.token.text)
+                offset = (index + 1) * 8
                 content += f"""
         mov x8, #0x5d
-        ldr x0, [sp, #{hex(8)}]
+        ldr x0, [sp, #{hex(offset)}]
         svc 0
 """
         elif isinstance(statement, NodeLet):
