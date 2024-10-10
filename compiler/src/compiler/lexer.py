@@ -12,6 +12,8 @@ class TokenKind(Enum):
     LET = 7
     EQUAL = 8
     IDENTIFIER = 9
+    OPEN_BRACE = 10
+    CLOSE_BRACE = 11
 
 
 @dataclass
@@ -87,6 +89,14 @@ def lex_let(cursor, content):
 
 def lex(content):
     cursor = 0
+    chars = {
+        ";": TokenKind.SEMICOLON,
+        "=": TokenKind.EQUAL,
+        "(": TokenKind.LEFT_PAREN,
+        ")": TokenKind.RIGHT_PAREN,
+        "{": TokenKind.OPEN_BRACE,
+        "}": TokenKind.CLOSE_BRACE,
+    }
     while cursor < len(content):
         if content[cursor] == "#":
             cursor, token = lex_comment(cursor, content)
@@ -103,20 +113,10 @@ def lex(content):
         elif content[cursor].isalpha():
             cursor, token = lex_identifier(cursor, content)
             yield token
-        elif content[cursor] == "=":
-            token = Token(kind=TokenKind.EQUAL, text="=")
-            yield token
-            cursor += 1
-        elif content[cursor] == "(":
-            token = Token(kind=TokenKind.LEFT_PAREN, text="(")
-            yield token
-            cursor += 1
-        elif content[cursor] == ")":
-            token = Token(kind=TokenKind.RIGHT_PAREN, text=")")
-            yield token
-            cursor += 1
-        elif content[cursor] == ";":
-            token = Token(kind=TokenKind.SEMICOLON, text=";")
+        elif content[cursor] in chars:
+            token = Token(
+                kind=chars[content[cursor]], text=content[cursor]
+            )
             yield token
             cursor += 1
         else:

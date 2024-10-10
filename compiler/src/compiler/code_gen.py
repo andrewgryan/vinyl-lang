@@ -39,7 +39,9 @@ _start:
         svc 0
 """
             else:
-                index = declarations.index(statement.status.token.text)
+                index = declarations.index(
+                    statement.status.token.text
+                )
                 offset = (index + 1) * 8
                 content += f"""
         mov x8, #0x5d
@@ -107,4 +109,3 @@ _start:
         pop  %rbp
 """
     return content
-
