@@ -29,6 +29,8 @@ from compiler.parser import (
             ],
         ),
         ("{}", [NodeBlock([])]),
+        ("{let x = 1;}", [NodeBlock([let("x", "1")])]),
+        ("let y = 2;\n{\nlet x = 1;\n}\n", [let("y", "2"), NodeBlock([let("x", "1")])]),
     ],
 )
 def test_parse(content, statements):

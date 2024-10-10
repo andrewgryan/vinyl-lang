@@ -41,17 +41,7 @@ def parse(content: str):
     cursor = 0
     statements = []
     while cursor < len(tokens):
-        if tokens[cursor].kind == TokenKind.OPEN_BRACE:
-            block, cursor = parse_block(tokens, cursor)
-            if block:
-                statements.append(block)
-                continue
-
-        statement, cursor = parse_exit(tokens, cursor)
-        if statement:
-            statements.append(statement)
-            continue
-        statement, cursor = parse_let(tokens, cursor)
+        statement, cursor = parse_statement(tokens, cursor)
         if statement:
             statements.append(statement)
             continue
@@ -61,7 +51,31 @@ def parse(content: str):
 
 
 def parse_block(tokens, cursor):
-    return NodeBlock([]), cursor + 1
+    if tokens[cursor].kind == TokenKind.OPEN_BRACE:
+        cursor += 1
+        statements = []
+        while (cursor < len(tokens)) and (tokens[cursor].kind != TokenKind.CLOSE_BRACE):
+            statement, cursor = parse_statement(tokens, cursor)
+            if statement:
+                statements.append(statement)
+            else:
+                cursor += 1
+        return NodeBlock(statements), cursor
+    else:
+        return None, cursor
+
+
+def parse_statement(tokens, cursor):
+    statement, cursor = parse_exit(tokens, cursor)
+    if statement:
+        return statement, cursor
+    statement, cursor = parse_let(tokens, cursor)
+    if statement:
+        return statement, cursor
+    statement, cursor = parse_block(tokens, cursor)
+    if statement:
+        return statement, cursor
+    return None, cursor
 
 
 def exit(status: str):
