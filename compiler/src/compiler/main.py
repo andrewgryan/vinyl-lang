@@ -122,7 +122,6 @@ _start:
 """
 
     for statement in program.statements:
-        print(statement)
         if isinstance(statement, NodeExit):
             if isinstance(statement.status, NodeInt):
                 code = int(statement.status.token.text)
@@ -140,7 +139,7 @@ _start:
         elif isinstance(statement, NodeLet):
             index = declarations.index(statement.identifier.text)
             value = int(statement.value.text)
-            offset = size_in_bytes
+            offset = (index + 1) * 8
             content += f"""
         mov     w0, #{hex(value)}
         str     w0, [sp, #{hex(offset)}]

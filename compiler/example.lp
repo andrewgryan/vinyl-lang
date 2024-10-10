@@ -1,3 +1,3 @@
 # Vinyl lang
 let status = 7;
-exit(42);
+exit(status);
