@@ -32,8 +32,6 @@ class NodeProgram:
 
 def parse(content: str):
     tokens = list(lex(content))
-    for token in tokens:
-        print(token)
     cursor = 0
     statements = []
     while cursor < len(tokens):
@@ -143,8 +141,8 @@ _start:
             value = int(statement.value.text)
             offset = (index + 1) * 8
             content += f"""
-        mov     w0, #{hex(value)}
-        str     w0, [sp, #{hex(offset)}]
+        mov w0, #{hex(value)}
+        str w0, [sp, #{hex(offset)}]
 """
 
     # Restore stack pointer
