@@ -10,79 +10,71 @@ def code_gen(program, arch):
 
 
 def code_gen_aaarch64(program):
-    content = """
-.global _start
-.section .text
+    lines = [
+        ".global _start",
+        ".section .text",
+        "",
+        "_start:"
+    ]
+    lines += code_gen_statements(program.statements, stack_offset=8)
+    return "\n".join(lines) + "\n"
 
-_start:
-"""
+
+def code_gen_block(block) -> list[str]:
+    return code_gen_statements(block.statements)
+
+
+def code_gen_statements(statements, stack_offset=0):
+    lines = []
     # Stack allocate space for variables
     declarations = []
-    for statement in program.statements:
+    for statement in statements:
         if isinstance(statement, NodeLet):
             declarations.append(statement.identifier.text)
 
     # Decrement stack pointer
     size_in_bytes = 8 * len(declarations)
     if size_in_bytes > 0:
-        content += "\n"
-        content += "\n".join([
-            line("sub", "sp", "sp", f"#{hex(size_in_bytes + 8)}")
-        ])
-        content += "\n"
+        lines += [
+            line("sub", "sp", "sp", f"#{hex(size_in_bytes + stack_offset)}")
+        ]
 
-    for statement in program.statements:
+    for statement in statements:
         if isinstance(statement, NodeExit):
             if isinstance(statement.status, NodeInt):
                 code = int(statement.status.token.text)
-                content += "\n"
-                content += "\n".join([
+                lines += [
                     line("mov", "x8", "#0x5d"),
                     line("mov", "x0", f"#{hex(code)}"),
                     line("svc", "0")
-                ])
-                content += "\n"
+                ]
             else:
                 index = declarations.index(
                     statement.status.token.text
                 )
                 offset = (index + 1) * 8
-                content += "\n"
-                content += "\n".join([
+                lines += [
                     line("mov", "x8", "#0x5d"),
                     line("ldr", "x0", f"[sp, #{hex(offset)}]"),
                     line("svc", "0")
-                ])
-                content += "\n"
+                ]
         elif isinstance(statement, NodeLet):
             index = declarations.index(statement.identifier.text)
             value = int(statement.value.text)
             offset = (index + 1) * 8
-            content += "\n"
-            content += "\n".join([
+            lines += [
                 line("mov", "w0", f"#{hex(value)}"),
                 line("str", "w0", f"[sp, #{hex(offset)}]")
-            ])
-            content += "\n"
+            ]
         elif isinstance(statement, NodeBlock):
-            content += block_aarch64(statement)
+            lines += code_gen_block(statement)
 
     # Restore stack pointer
     if size_in_bytes > 0:
-        content += "\n"
-        content += line("add", "sp", "sp", f"#{hex(size_in_bytes + 8)}")
-        content += "\n"
-    return content
-
-
-def block_aarch64(block):
-    # TODO: code gen block AST
-    return "\n".join([
-        line("sub", "sp", "sp", "#0x8"),
-        line("mov", "w0", "#0x2a"),
-        line("str", "w0", "[sp, #0x8]"),
-        line("add", "sp", "sp", "#0x8")
-    ])
+        lines += [
+            line("add", "sp", "sp", f"#{hex(size_in_bytes + stack_offset)}")
+        ]
+    return lines
 
 
 def line(instruction, *args):
