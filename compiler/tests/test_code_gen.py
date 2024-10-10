@@ -1,5 +1,7 @@
 import pytest
-from compiler.main import code_gen, Arch, parse
+from compiler.arch import Arch
+from compiler.code_gen import code_gen
+from compiler.parser import parse
 
 
 def test_code_gen_aarch64():

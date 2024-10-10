@@ -1,5 +1,5 @@
 import pytest
-from compiler.main import parse, let, exit, NodeExit, NodeIdentifier, Token
+from compiler.parser import parse, let, exit, NodeExit, NodeIdentifier, Token
 
 
 @pytest.mark.parametrize("content,statements", [
