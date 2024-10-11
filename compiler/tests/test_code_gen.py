@@ -1,6 +1,6 @@
 import pytest
 from compiler.arch import Arch
-from compiler.code_gen import code_gen
+from compiler.code_gen import code_gen, stack_alignment
 from compiler.parser import parse
 
 
@@ -32,3 +32,18 @@ def test_code_gen_aarch64(snapshot, program):
     snapshot.assert_match(
         code_gen(parse(program), Arch.aarch64), "out.asm"
     )
+
+
+@pytest.mark.parametrize(
+    "size,expected",
+    [
+        (0, 0),
+        (1, 16),
+        (15, 16),
+        (16, 16),
+        (31, 32),
+        (33, 48)
+    ]
+)
+def test_stack_alignment(size, expected):
+    assert stack_alignment(size) == expected

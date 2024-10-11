@@ -9,6 +9,13 @@ def code_gen(program, arch):
         return code_gen_x86_64(program)
 
 
+def stack_alignment(address: int):
+    if address % 16 == 0:
+        return address
+    else:
+        return ((address >> 4) + 1) << 4
+
+
 def code_gen_aaarch64(program):
     lines = [
         ".global _start",
@@ -33,7 +40,7 @@ def code_gen_statements(statements, stack_offset=0):
             declarations.append(statement.identifier.text)
 
     # Decrement stack pointer
-    size_in_bytes = 8 * len(declarations)
+    size_in_bytes = stack_alignment(8 * len(declarations))
     if size_in_bytes > 0:
         lines += [
             line("sub", "sp", "sp", f"#{hex(size_in_bytes + stack_offset)}")
