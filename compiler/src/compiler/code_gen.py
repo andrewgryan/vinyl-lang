@@ -19,7 +19,7 @@ def stack_alignment(address: int):
 def code_gen_aaarch64(program):
     lines = [".global _start", ".section .text", "", "_start:"]
     lines += code_gen_statements(
-        program.statements, stack_offset=8
+        program.statements
     )
     return "\n".join(lines) + "\n"
 
@@ -28,7 +28,7 @@ def code_gen_block(block) -> list[str]:
     return code_gen_statements(block.statements)
 
 
-def code_gen_statements(statements, stack_offset=0):
+def code_gen_statements(statements):
     lines = []
     # Stack allocate space for variables
     declarations = []
@@ -44,7 +44,7 @@ def code_gen_statements(statements, stack_offset=0):
                 "sub",
                 "sp",
                 "sp",
-                f"#{hex(size_in_bytes + stack_offset)}",
+                f"#{hex(size_in_bytes)}",
             )
         ]
 
@@ -85,7 +85,7 @@ def code_gen_statements(statements, stack_offset=0):
                 "add",
                 "sp",
                 "sp",
-                f"#{hex(size_in_bytes + stack_offset)}",
+                f"#{hex(size_in_bytes)}",
             )
         ]
     return lines
