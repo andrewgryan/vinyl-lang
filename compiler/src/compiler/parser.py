@@ -2,9 +2,23 @@ from dataclasses import dataclass
 from compiler.lexer import lex, Token, TokenKind
 
 
+def add(lhs, rhs):
+    return NodeAdd(lhs, rhs)
+
+
+def literal(value):
+    return NodeInt(Token.int(value))
+
+
 @dataclass
 class NodeExpression:
     tokens: list[Token]
+
+
+@dataclass
+class NodeAdd:
+    lhs: NodeExpression
+    rhs: NodeExpression
 
 
 @dataclass
@@ -53,6 +67,16 @@ def parse(content: str):
         else:
             cursor += 1
     return NodeProgram(statements)
+
+
+def parse_binary(tokens, cursor):
+    if tokens[cursor].kind == TokenKind.INT:
+        lhs = NodeInt(tokens[cursor])
+    if tokens[cursor + 1].kind == TokenKind.PLUS:
+        NodeBinOp = NodeAdd
+    if tokens[cursor + 2].kind == TokenKind.INT:
+        rhs = NodeInt(tokens[cursor + 2])
+    return NodeBinOp(lhs, rhs), cursor
 
 
 def parse_block(tokens, cursor):

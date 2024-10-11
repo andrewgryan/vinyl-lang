@@ -1,6 +1,10 @@
 import pytest
+from compiler.lexer import lex
 from compiler.parser import (
     parse,
+    parse_binary,
+    add,
+    literal,
     let,
     exit,
     NodeLet,
@@ -58,3 +62,15 @@ from compiler.parser import (
 )
 def test_parse(content, statements):
     assert parse(content).statements == statements
+
+
+@pytest.mark.parametrize(
+    "code,ast",
+    [
+        ("1 + 1", add(literal("1"), literal("1")))
+    ]
+)
+def test_parse_binary_expression(code, ast):
+    tokens = list(lex(code))
+    node, _ = parse_binary(tokens, 0)
+    assert node == ast
