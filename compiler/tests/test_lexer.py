@@ -12,7 +12,7 @@ from compiler.lexer import lex, Token, TokenKind
         (")", [Token(TokenKind.RIGHT_PAREN, ")")]),
         ("{", [Token(TokenKind.OPEN_BRACE, "{")]),
         ("}", [Token(TokenKind.CLOSE_BRACE, "}")]),
-        ("+", [Token(TokenKind.PLUS, "+")])
+        ("+", [Token(TokenKind.PLUS, "+")]),
     ],
 )
 def test_lex(content, tokens):

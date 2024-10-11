@@ -3,8 +3,10 @@ from compiler.parser import (
     parse,
     let,
     exit,
+    NodeLet,
     NodeBlock,
     NodeExit,
+    NodeExpression,
     NodeIdentifier,
     Token,
 )
@@ -30,7 +32,28 @@ from compiler.parser import (
         ),
         ("{}", [NodeBlock([])]),
         ("{let x = 1;}", [NodeBlock([let("x", "1")])]),
-        ("let y = 2;\n{\nlet x = 1;\n}\n", [let("y", "2"), NodeBlock([let("x", "1")])]),
+        (
+            "let y = 2;\n{\nlet x = 1;\n}\n",
+            [let("y", "2"), NodeBlock([let("x", "1")])],
+        ),
+        pytest.param(
+            "let x = 1 + 1;",
+            [
+                NodeLet(
+                    identifier=NodeIdentifier(
+                        Token.identifier("x")
+                    ),
+                    value=NodeExpression(
+                        [
+                            Token.int("1"),
+                            Token.plus(),
+                            Token.int("1"),
+                        ]
+                    ),
+                )
+            ],
+            marks=pytest.mark.xfail
+        ),
     ],
 )
 def test_parse(content, statements):

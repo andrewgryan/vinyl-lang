@@ -17,13 +17,10 @@ def stack_alignment(address: int):
 
 
 def code_gen_aaarch64(program):
-    lines = [
-        ".global _start",
-        ".section .text",
-        "",
-        "_start:"
-    ]
-    lines += code_gen_statements(program.statements, stack_offset=8)
+    lines = [".global _start", ".section .text", "", "_start:"]
+    lines += code_gen_statements(
+        program.statements, stack_offset=8
+    )
     return "\n".join(lines) + "\n"
 
 
@@ -43,7 +40,12 @@ def code_gen_statements(statements, stack_offset=0):
     size_in_bytes = stack_alignment(8 * len(declarations))
     if size_in_bytes > 0:
         lines += [
-            line("sub", "sp", "sp", f"#{hex(size_in_bytes + stack_offset)}")
+            line(
+                "sub",
+                "sp",
+                "sp",
+                f"#{hex(size_in_bytes + stack_offset)}",
+            )
         ]
 
     for statement in statements:
@@ -53,7 +55,7 @@ def code_gen_statements(statements, stack_offset=0):
                 lines += [
                     line("mov", "x8", "#0x5d"),
                     line("mov", "x0", f"#{hex(code)}"),
-                    line("svc", "0")
+                    line("svc", "0"),
                 ]
             else:
                 index = declarations.index(
@@ -63,7 +65,7 @@ def code_gen_statements(statements, stack_offset=0):
                 lines += [
                     line("mov", "x8", "#0x5d"),
                     line("ldr", "x0", f"[sp, #{hex(offset)}]"),
-                    line("svc", "0")
+                    line("svc", "0"),
                 ]
         elif isinstance(statement, NodeLet):
             index = declarations.index(statement.identifier.text)
@@ -71,7 +73,7 @@ def code_gen_statements(statements, stack_offset=0):
             offset = (index + 1) * 8
             lines += [
                 line("mov", "w0", f"#{hex(value)}"),
-                line("str", "w0", f"[sp, #{hex(offset)}]")
+                line("str", "w0", f"[sp, #{hex(offset)}]"),
             ]
         elif isinstance(statement, NodeBlock):
             lines += code_gen_block(statement)
@@ -79,13 +81,19 @@ def code_gen_statements(statements, stack_offset=0):
     # Restore stack pointer
     if size_in_bytes > 0:
         lines += [
-            line("add", "sp", "sp", f"#{hex(size_in_bytes + stack_offset)}")
+            line(
+                "add",
+                "sp",
+                "sp",
+                f"#{hex(size_in_bytes + stack_offset)}",
+            )
         ]
     return lines
 
 
 def line(instruction, *args):
     return f"        {instruction} {', '.join(args)}"
+
 
 def code_gen_x86_64(program):
     content = """

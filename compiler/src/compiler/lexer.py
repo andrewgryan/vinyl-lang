@@ -30,6 +30,10 @@ class Token:
     def int(cls, text: str):
         return cls(kind=TokenKind.INT, text=text)
 
+    @classmethod
+    def plus(cls):
+        return cls(kind=TokenKind.PLUS, text="+")
+
 
 def lex_comment(cursor, content):
     begin = cursor

@@ -25,7 +25,9 @@ _start:
         pytest.param(
             "let x = 42;let y = 7;exit(y);", id="second_var"
         ),
-        pytest.param("let x = 1; { let y = 42; } exit(x);", id="block")
+        pytest.param(
+            "let x = 1; { let y = 42; } exit(x);", id="block"
+        ),
     ],
 )
 def test_code_gen_aarch64(snapshot, program):
@@ -36,14 +38,7 @@ def test_code_gen_aarch64(snapshot, program):
 
 @pytest.mark.parametrize(
     "size,expected",
-    [
-        (0, 0),
-        (1, 16),
-        (15, 16),
-        (16, 16),
-        (31, 32),
-        (33, 48)
-    ]
+    [(0, 0), (1, 16), (15, 16), (16, 16), (31, 32), (33, 48)],
 )
 def test_stack_alignment(size, expected):
     assert stack_alignment(size) == expected

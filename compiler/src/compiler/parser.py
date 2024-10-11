@@ -3,6 +3,11 @@ from compiler.lexer import lex, Token, TokenKind
 
 
 @dataclass
+class NodeExpression:
+    tokens: list[Token]
+
+
+@dataclass
 class NodeInt:
     token: Token
 
@@ -54,7 +59,9 @@ def parse_block(tokens, cursor):
     if tokens[cursor].kind == TokenKind.OPEN_BRACE:
         cursor += 1
         statements = []
-        while (cursor < len(tokens)) and (tokens[cursor].kind != TokenKind.CLOSE_BRACE):
+        while (cursor < len(tokens)) and (
+            tokens[cursor].kind != TokenKind.CLOSE_BRACE
+        ):
             statement, cursor = parse_statement(tokens, cursor)
             if statement:
                 statements.append(statement)
@@ -102,24 +109,31 @@ def let(identifier: str, value: str):
 
 
 def parse_let(tokens, cursor):
-    rule = (
-        TokenKind.LET,
-        TokenKind.IDENTIFIER,
-        TokenKind.EQUAL,
-        TokenKind.INT,
-        TokenKind.SEMICOLON,
-    )
-    kinds = tuple(
-        token.kind for token in tokens[cursor : cursor + 5]
-    )
-    if rule == kinds:
-        node = NodeLet(tokens[cursor + 1], tokens[cursor + 3])
-        return node, cursor + 5
+    # let identifier = expression;
+    if (
+        (tokens[cursor].kind == TokenKind.LET)
+        and (tokens[cursor + 1].kind == TokenKind.IDENTIFIER)
+        and (tokens[cursor + 2].kind == TokenKind.EQUAL)
+    ):
+        identifier = tokens[cursor + 1]
+        expression, next_cursor = parse_arithmetic(tokens, cursor + 3)
+        if expression and (tokens[next_cursor].kind == TokenKind.SEMICOLON):
+            return NodeLet(identifier, expression), next_cursor + 1
+        else:
+            return None, cursor
+    else:
+        return None, cursor
+
+
+def parse_arithmetic(tokens, cursor):
+    if tokens[cursor].kind == TokenKind.INT:
+        return tokens[cursor], cursor + 1
     else:
         return None, cursor
 
 
 def parse_expression(tokens, cursor):
+    # TODO: Support arithmetic expressions
     if tokens[cursor].kind == TokenKind.INT:
         return NodeInt(tokens[cursor]), cursor + 1
     elif tokens[cursor].kind == TokenKind.IDENTIFIER:
