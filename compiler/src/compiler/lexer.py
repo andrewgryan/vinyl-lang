@@ -15,6 +15,10 @@ class TokenKind(Enum):
     OPEN_BRACE = 10
     CLOSE_BRACE = 11
     PLUS = 12
+    MINUS = 13
+    STAR = 14
+    FORWARD_SLASH = 15
+    CARET = 16
 
 
 @dataclass
@@ -102,6 +106,10 @@ def lex(content):
         "{": TokenKind.OPEN_BRACE,
         "}": TokenKind.CLOSE_BRACE,
         "+": TokenKind.PLUS,
+        "-": TokenKind.MINUS,
+        "*": TokenKind.STAR,
+        "/": TokenKind.FORWARD_SLASH,
+        "^": TokenKind.CARET
     }
     while cursor < len(content):
         if content[cursor] == "#":

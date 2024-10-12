@@ -1,9 +1,42 @@
+from __future__ import annotations
+from enum import Enum
+from collections import namedtuple
 from dataclasses import dataclass
 from compiler.lexer import lex, Token, TokenKind
 
 
-def add(lhs, rhs):
-    return NodeAdd(lhs, rhs)
+Op = namedtuple("Op", "operator precedence associative")
+
+
+class Associative(Enum):
+    LEFT = 1
+    RIGHT = 2
+
+
+OPERATORS = {
+    "+": Op("+", 1, Associative.LEFT),
+    "-": Op("-", 1, Associative.LEFT),
+    "*": Op("*", 2, Associative.LEFT),
+    "/": Op("/", 2, Associative.LEFT),
+    "^": Op("^", 3, Associative.RIGHT),
+}
+
+@dataclass
+class NodeLiteral:
+    value: Token
+
+@dataclass
+class NodeBinOp:
+    operator: str
+    lhs: NodeBinOp | NodeLiteral = None
+    rhs: NodeBinOp | NodeLiteral = None
+
+
+def parse_op(tokens, cursor):
+    if tokens[cursor].text in OPERATORS:
+        return OPERATORS[tokens[cursor].text], cursor + 1
+    else:
+        return None, cursor
 
 
 def literal(value):
@@ -70,13 +103,15 @@ def parse(content: str):
 
 
 def parse_binary(tokens, cursor):
+    op, _ = parse_op(tokens, cursor + 1)
     if tokens[cursor].kind == TokenKind.INT:
         lhs = NodeInt(tokens[cursor])
-    if tokens[cursor + 1].kind == TokenKind.PLUS:
-        NodeBinOp = NodeAdd
     if tokens[cursor + 2].kind == TokenKind.INT:
         rhs = NodeInt(tokens[cursor + 2])
-    return NodeBinOp(lhs, rhs), cursor
+    if op:
+        return NodeBinOp(op, lhs, rhs), cursor
+    else:
+        return None, cursor
 
 
 def parse_block(tokens, cursor):

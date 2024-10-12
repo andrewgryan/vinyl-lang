@@ -2,17 +2,20 @@ import pytest
 from compiler.lexer import lex
 from compiler.parser import (
     parse,
+    parse_op,
     parse_binary,
-    add,
     literal,
     let,
     exit,
     NodeLet,
     NodeBlock,
+    NodeBinOp,
     NodeExit,
     NodeExpression,
     NodeIdentifier,
     Token,
+    Op,
+    Associative
 )
 
 
@@ -67,10 +70,17 @@ def test_parse(content, statements):
 @pytest.mark.parametrize(
     "code,ast",
     [
-        ("1 + 1", add(literal("1"), literal("1")))
+        ("1 + 1", NodeBinOp(Op("+", 1, Associative.LEFT), literal("1"), literal("1"))),
+        ("1 - 1", NodeBinOp(Op("-", 1, Associative.LEFT), literal("1"), literal("1")))
     ]
 )
 def test_parse_binary_expression(code, ast):
     tokens = list(lex(code))
     node, _ = parse_binary(tokens, 0)
     assert node == ast
+
+
+def test_parse_op():
+    tokens = list(lex("10 * 2 ^ 8"))
+    assert parse_op(tokens, 1)[0] == Op("*", 2, Associative.LEFT)
+    assert parse_op(tokens, 3)[0] == Op("^", 3, Associative.RIGHT)
