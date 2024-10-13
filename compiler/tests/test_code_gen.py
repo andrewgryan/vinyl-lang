@@ -28,6 +28,11 @@ _start:
         pytest.param(
             "let x = 1; { let y = 42; } exit(x);", id="block"
         ),
+        pytest.param(
+            "exit(1 + 2);",
+            id="addition",
+            marks=pytest.mark.skip("waiting for parser"),
+        ),
     ],
 )
 def test_code_gen_aarch64(snapshot, program):

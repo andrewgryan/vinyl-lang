@@ -15,7 +15,7 @@ from compiler.parser import (
     NodeIdentifier,
     Token,
     Op,
-    Associative
+    Associative,
 )
 
 
@@ -44,6 +44,18 @@ from compiler.parser import (
             [let("y", "2"), NodeBlock([let("x", "1")])],
         ),
         pytest.param(
+            "exit(1 + 2);",
+            [
+                NodeExit(
+                    NodeBinOp(
+                        Op("+", 1, Associative.LEFT),
+                        literal("1"),
+                        literal("2"),
+                    )
+                )
+            ],
+        ),
+        pytest.param(
             "let x = 1 + 1;",
             [
                 NodeLet(
@@ -59,7 +71,7 @@ from compiler.parser import (
                     ),
                 )
             ],
-            marks=pytest.mark.xfail
+            marks=pytest.mark.xfail,
         ),
     ],
 )
@@ -70,9 +82,23 @@ def test_parse(content, statements):
 @pytest.mark.parametrize(
     "code,ast",
     [
-        ("1 + 1", NodeBinOp(Op("+", 1, Associative.LEFT), literal("1"), literal("1"))),
-        ("1 - 1", NodeBinOp(Op("-", 1, Associative.LEFT), literal("1"), literal("1")))
-    ]
+        (
+            "1 + 1",
+            NodeBinOp(
+                Op("+", 1, Associative.LEFT),
+                literal("1"),
+                literal("1"),
+            ),
+        ),
+        (
+            "1 - 1",
+            NodeBinOp(
+                Op("-", 1, Associative.LEFT),
+                literal("1"),
+                literal("1"),
+            ),
+        ),
+    ],
 )
 def test_parse_binary_expression(code, ast):
     tokens = list(lex(code))
@@ -83,4 +109,6 @@ def test_parse_binary_expression(code, ast):
 def test_parse_op():
     tokens = list(lex("10 * 2 ^ 8"))
     assert parse_op(tokens, 1)[0] == Op("*", 2, Associative.LEFT)
-    assert parse_op(tokens, 3)[0] == Op("^", 3, Associative.RIGHT)
+    assert parse_op(tokens, 3)[0] == Op(
+        "^", 3, Associative.RIGHT
+    )

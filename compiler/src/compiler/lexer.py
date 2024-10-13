@@ -109,7 +109,7 @@ def lex(content):
         "-": TokenKind.MINUS,
         "*": TokenKind.STAR,
         "/": TokenKind.FORWARD_SLASH,
-        "^": TokenKind.CARET
+        "^": TokenKind.CARET,
     }
     while cursor < len(content):
         if content[cursor] == "#":

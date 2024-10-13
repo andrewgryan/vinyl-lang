@@ -21,9 +21,11 @@ OPERATORS = {
     "^": Op("^", 3, Associative.RIGHT),
 }
 
+
 @dataclass
 class NodeLiteral:
     value: Token
+
 
 @dataclass
 class NodeBinOp:
@@ -175,9 +177,16 @@ def parse_let(tokens, cursor):
         and (tokens[cursor + 2].kind == TokenKind.EQUAL)
     ):
         identifier = tokens[cursor + 1]
-        expression, next_cursor = parse_arithmetic(tokens, cursor + 3)
-        if expression and (tokens[next_cursor].kind == TokenKind.SEMICOLON):
-            return NodeLet(identifier, expression), next_cursor + 1
+        expression, next_cursor = parse_arithmetic(
+            tokens, cursor + 3
+        )
+        if expression and (
+            tokens[next_cursor].kind == TokenKind.SEMICOLON
+        ):
+            return (
+                NodeLet(identifier, expression),
+                next_cursor + 1,
+            )
         else:
             return None, cursor
     else:

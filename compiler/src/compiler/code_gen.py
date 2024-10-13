@@ -18,9 +18,7 @@ def stack_alignment(address: int):
 
 def code_gen_aaarch64(program):
     lines = [".global _start", ".section .text", "", "_start:"]
-    lines += code_gen_statements(
-        program.statements
-    )
+    lines += code_gen_statements(program.statements)
     return "\n".join(lines) + "\n"
 
 
