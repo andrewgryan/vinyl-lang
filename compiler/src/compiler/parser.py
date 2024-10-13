@@ -151,16 +151,20 @@ def exit(status: str):
 
 
 def parse_exit(tokens, cursor):
-    if (
-        (tokens[cursor + 0].kind == TokenKind.EXIT)
-        and (tokens[cursor + 1].kind == TokenKind.LEFT_PAREN)
-        and (tokens[cursor + 3].kind == TokenKind.RIGHT_PAREN)
-        and (tokens[cursor + 4].kind == TokenKind.SEMICOLON)
-    ):
-        status, cursor = parse_expression(tokens, cursor + 2)
-        return NodeExit(status=status), cursor + 2
-    else:
-        return None, cursor
+    if (tokens[cursor + 0].kind == TokenKind.EXIT) and (
+        tokens[cursor + 1].kind == TokenKind.LEFT_PAREN):
+        status, next_cursor = parse_expression(
+            tokens, cursor + 2
+        )
+        if (
+            status
+            and (
+                tokens[next_cursor + 0].kind == TokenKind.RIGHT_PAREN
+            )
+            and (tokens[next_cursor + 1].kind == TokenKind.SEMICOLON)
+        ):
+            return NodeExit(status=status), next_cursor + 2
+    return None, cursor
 
 
 def let(identifier: str, value: str):
@@ -203,7 +207,12 @@ def parse_arithmetic(tokens, cursor):
 def parse_expression(tokens, cursor):
     # TODO: Support arithmetic expressions
     if tokens[cursor].kind == TokenKind.INT:
-        return NodeInt(tokens[cursor]), cursor + 1
+        node, next_cursor = parse_binary(tokens, cursor)
+        print(node)
+        if node:
+            return node, next_cursor
+        else:
+            return NodeInt(tokens[cursor]), cursor + 1
     elif tokens[cursor].kind == TokenKind.IDENTIFIER:
         return NodeIdentifier(tokens[cursor]), cursor + 1
     else:
