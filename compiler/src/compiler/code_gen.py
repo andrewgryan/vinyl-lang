@@ -1,5 +1,5 @@
 from compiler.arch import Arch
-from compiler.parser import NodeLet, NodeExit, NodeInt, NodeBlock
+from compiler.parser import NodeBinOp, NodeLet, NodeExit, NodeInt, NodeBlock
 
 
 def code_gen(program, arch):
@@ -53,6 +53,17 @@ def code_gen_statements(statements):
                 lines += [
                     line("mov", "x8", "#0x5d"),
                     line("mov", "x0", f"#{hex(code)}"),
+                    line("svc", "0"),
+                ]
+            elif isinstance(statement.status, NodeBinOp):
+                lhs = int(statement.status.lhs.token.text)
+                rhs = int(statement.status.rhs.token.text)
+                lines += [
+                    line("mov", "x0", f"#{hex(lhs)}"),
+                    line("mov", "x1", f"#{hex(rhs)}"),
+                    line("add", "x1", "x1", "x0"),
+                    line("mov", "x8", "#0x5d"),
+                    line("mov", "x0", "x1"),
                     line("svc", "0"),
                 ]
             else:

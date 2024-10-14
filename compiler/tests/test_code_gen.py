@@ -31,7 +31,6 @@ _start:
         pytest.param(
             "exit(1 + 2);",
             id="addition",
-            marks=pytest.mark.skip("waiting for parser"),
         ),
     ],
 )
