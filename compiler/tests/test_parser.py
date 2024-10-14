@@ -98,6 +98,46 @@ def test_parse(content, statements):
                 literal("1"),
             ),
         ),
+        (
+            "1 + 2 + 3",
+            NodeBinOp(
+                Op("+", 1, Associative.LEFT),
+                NodeBinOp(
+                    Op("+", 1, Associative.LEFT),
+                    literal("1"),
+                    literal("2"),
+                ),
+                literal("3"),
+            ),
+        ),
+        (
+            "1 - 2 + 3",
+            NodeBinOp(
+                Op("+", 1, Associative.LEFT),
+                NodeBinOp(
+                    Op("-", 1, Associative.LEFT),
+                    literal("1"),
+                    literal("2"),
+                ),
+                literal("3"),
+            ),
+        ),
+        (
+            "1 + 2 + 3 + 4",
+            NodeBinOp(
+                Op("+", 1, Associative.LEFT),
+                NodeBinOp(
+                    Op("+", 1, Associative.LEFT),
+                    NodeBinOp(
+                        Op("+", 1, Associative.LEFT),
+                        literal("1"),
+                        literal("2"),
+                    ),
+                    literal("3"),
+                ),
+                literal("4"),
+            )
+        ),
     ],
 )
 def test_parse_binary_expression(code, ast):

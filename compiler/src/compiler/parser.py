@@ -34,13 +34,6 @@ class NodeBinOp:
     rhs: NodeBinOp | NodeLiteral = None
 
 
-def parse_op(tokens, cursor):
-    if tokens[cursor].text in OPERATORS:
-        return OPERATORS[tokens[cursor].text], cursor + 1
-    else:
-        return None, cursor
-
-
 def literal(value):
     return NodeInt(Token.int(value))
 
@@ -102,18 +95,6 @@ def parse(content: str):
         else:
             cursor += 1
     return NodeProgram(statements)
-
-
-def parse_binary(tokens, cursor):
-    op, _ = parse_op(tokens, cursor + 1)
-    if tokens[cursor].kind == TokenKind.INT:
-        lhs = NodeInt(tokens[cursor])
-    if tokens[cursor + 2].kind == TokenKind.INT:
-        rhs = NodeInt(tokens[cursor + 2])
-    if op:
-        return NodeBinOp(op, lhs, rhs), cursor + 3
-    else:
-        return None, cursor
 
 
 def parse_block(tokens, cursor):
@@ -208,12 +189,37 @@ def parse_expression(tokens, cursor):
     # TODO: Support arithmetic expressions
     if tokens[cursor].kind == TokenKind.INT:
         node, next_cursor = parse_binary(tokens, cursor)
-        print(node)
         if node:
             return node, next_cursor
         else:
             return NodeInt(tokens[cursor]), cursor + 1
     elif tokens[cursor].kind == TokenKind.IDENTIFIER:
         return NodeIdentifier(tokens[cursor]), cursor + 1
+    else:
+        return None, cursor
+
+
+def parse_binary(tokens, cursor):
+    # (((((a) + b) + c) + d) + e)
+    lhs, cursor = parse_term(tokens, cursor)
+    op, cursor = parse_op(tokens, cursor)
+    while (cursor < len(tokens)) and op:
+        rhs, cursor = parse_term(tokens, cursor)
+        lhs = NodeBinOp(op, lhs, rhs)
+        op, cursor = parse_op(tokens, cursor)
+    return lhs, cursor
+
+def parse_term(tokens, cursor):
+    if (cursor < len(tokens)) and tokens[cursor].kind == TokenKind.INT:
+        return NodeInt(tokens[cursor]), cursor + 1
+    else:
+        return None, cursor
+
+
+def parse_op(tokens, cursor):
+    if cursor >= len(tokens):
+        return None, cursor
+    if tokens[cursor].text in OPERATORS:
+        return OPERATORS[tokens[cursor].text], cursor + 1
     else:
         return None, cursor
