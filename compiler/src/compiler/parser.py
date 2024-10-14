@@ -111,7 +111,7 @@ def parse_binary(tokens, cursor):
     if tokens[cursor + 2].kind == TokenKind.INT:
         rhs = NodeInt(tokens[cursor + 2])
     if op:
-        return NodeBinOp(op, lhs, rhs), cursor
+        return NodeBinOp(op, lhs, rhs), cursor + 3
     else:
         return None, cursor
 
