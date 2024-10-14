@@ -56,12 +56,9 @@ def code_gen_statements(statements):
                     line("svc", "0"),
                 ]
             elif isinstance(statement.status, NodeBinOp):
-                lhs = int(statement.status.lhs.token.text)
-                rhs = int(statement.status.rhs.token.text)
+                # Recursively evaluate binary operations
+                lines += visit_bin(statement.status)
                 lines += [
-                    line("mov", "x0", f"#{hex(lhs)}"),
-                    line("mov", "x1", f"#{hex(rhs)}"),
-                    line("add", "x1", "x1", "x0"),
                     line("mov", "x8", "#0x5d"),
                     line("mov", "x0", "x1"),
                     line("svc", "0"),
@@ -98,6 +95,22 @@ def code_gen_statements(statements):
             )
         ]
     return lines
+
+
+def visit_bin(node):
+    if isinstance(node.lhs, NodeBinOp):
+        rhs = int(node.rhs.token.text)
+        return visit_bin(node.lhs) + [
+            line("mov", "x0", f"#{hex(rhs)}"),
+            line("add", "x1", "x1", "x0")
+        ]
+    else:
+        lhs = int(node.lhs.token.text)
+        rhs = int(node.rhs.token.text)
+        return [
+            line("mov", "x0", f"#{hex(lhs)}"),
+            line("mov", "x1", f"#{hex(rhs)}"),
+            line("add", "x1", "x1", "x0")]
 
 
 def line(instruction, *args):

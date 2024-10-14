@@ -32,6 +32,10 @@ _start:
             "exit(1 + 2);",
             id="addition",
         ),
+        pytest.param(
+            "exit(1 + 2 + 3);",
+            id="add_all",
+        ),
     ],
 )
 def test_code_gen_aarch64(snapshot, program):
