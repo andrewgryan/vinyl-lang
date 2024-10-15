@@ -1,3 +1,8 @@
 # Vinyl lang
-let status = 7;
+
+fn main() {
+	return 42;
+}
+
+let status = main();
 exit(status);

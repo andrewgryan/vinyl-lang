@@ -19,6 +19,7 @@ class TokenKind(Enum):
     STAR = 14
     FORWARD_SLASH = 15
     CARET = 16
+    FUNCTION = 17
 
 
 @dataclass
@@ -80,17 +81,15 @@ def lex_identifier(cursor, content):
     return cursor, token
 
 
-def lex_exit(cursor, content):
+def lex_keyword(key, cursor, content):
+    kinds = {
+        "let": TokenKind.LET,
+        "exit": TokenKind.EXIT,
+        "fn": TokenKind.FUNCTION,
+    }
+    length = len(key)
     token = Token(
-        kind=TokenKind.EXIT, text=content[cursor : cursor + 4]
-    )
-    return cursor + 4, token
-
-
-def lex_let(cursor, content):
-    length = len("let")
-    token = Token(
-        kind=TokenKind.LET,
+        kind=kinds[key],
         text=content[cursor : cursor + length],
     )
     return cursor + length, token
@@ -118,11 +117,14 @@ def lex(content):
         elif content[cursor].isdigit():
             cursor, token = lex_int(cursor, content)
             yield token
-        elif content[cursor : cursor + 4] == "exit":
-            cursor, token = lex_exit(cursor, content)
+        elif content[cursor:].startswith("exit"):
+            cursor, token = lex_keyword("exit", cursor, content)
             yield token
         elif content[cursor:].startswith("let"):
-            cursor, token = lex_let(cursor, content)
+            cursor, token = lex_keyword("let", cursor, content)
+            yield token
+        elif content[cursor:].startswith("fn"):
+            cursor, token = lex_keyword("fn", cursor, content)
             yield token
         elif content[cursor].isalpha():
             cursor, token = lex_identifier(cursor, content)
