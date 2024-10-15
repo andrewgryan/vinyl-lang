@@ -1,5 +1,11 @@
 from compiler.arch import Arch
-from compiler.parser import NodeBinOp, NodeLet, NodeExit, NodeInt, NodeBlock
+from compiler.parser import (
+    NodeBinOp,
+    NodeLet,
+    NodeExit,
+    NodeInt,
+    NodeBlock,
+)
 
 
 def code_gen(program, arch):
@@ -74,12 +80,20 @@ def code_gen_statements(statements):
                     line("svc", "0"),
                 ]
         elif isinstance(statement, NodeLet):
+            # Calculate value or expression
+            if isinstance(statement.value, NodeInt):
+                value = int(statement.value.token.text)
+                lines += [
+                    line("mov", "x1", f"#{hex(value)}"),
+                ]
+            elif isinstance(statement.value, NodeBinOp):
+                lines += visit_bin(statement.value)
+
+            # Store value on stack
             index = declarations.index(statement.identifier.text)
-            value = int(statement.value.text)
             offset = (index + 1) * 8
             lines += [
-                line("mov", "w0", f"#{hex(value)}"),
-                line("str", "w0", f"[sp, #{hex(offset)}]"),
+                line("str", "x1", f"[sp, #{hex(offset)}]"),
             ]
         elif isinstance(statement, NodeBlock):
             lines += code_gen_block(statement)
@@ -99,26 +113,21 @@ def code_gen_statements(statements):
 
 def visit_bin(node):
     if isinstance(node.lhs, NodeBinOp):
-        cmd = {
-            "+": "add",
-            "-": "sub"
-        }[node.operator.operator]
+        cmd = {"+": "add", "-": "sub"}[node.operator.operator]
         rhs = int(node.rhs.token.text)
         return visit_bin(node.lhs) + [
             line("mov", "x0", f"#{hex(rhs)}"),
-            line(cmd, "x1", "x1", "x0")
+            line(cmd, "x1", "x1", "x0"),
         ]
     else:
         lhs = int(node.lhs.token.text)
         rhs = int(node.rhs.token.text)
-        cmd = {
-            "+": "add",
-            "-": "sub"
-        }[node.operator.operator]
+        cmd = {"+": "add", "-": "sub"}[node.operator.operator]
         return [
             line("mov", "x1", f"#{hex(lhs)}"),
             line("mov", "x0", f"#{hex(rhs)}"),
-            line(cmd, "x1", "x1", "x0")]
+            line(cmd, "x1", "x1", "x0"),
+        ]
 
 
 def line(instruction, *args):
@@ -156,7 +165,7 @@ _start:
 """
         elif isinstance(statement, NodeLet):
             index = declarations.index(statement.identifier.text)
-            value = int(statement.value.text)
+            value = int(statement.value.token.text)
             content += f"""
         mov  ${index}, %rdi
         movq ${value}, (%rsp, %rdi, 8)

@@ -3,8 +3,8 @@
 
 _start:
         sub sp, sp, #0x10
-        mov w0, #0x2a
-        str w0, [sp, #0x8]
+        mov x1, #0x2a
+        str x1, [sp, #0x8]
         mov x8, #0x5d
         ldr x0, [sp, #0x8]
         svc 0

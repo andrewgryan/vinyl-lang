@@ -56,22 +56,20 @@ from compiler.parser import (
             ],
         ),
         pytest.param(
-            "let x = 1 + 1;",
+            "let x = 1 + 2;",
             [
                 NodeLet(
                     identifier=NodeIdentifier(
                         Token.identifier("x")
                     ),
-                    value=NodeExpression(
-                        [
-                            Token.int("1"),
-                            Token.plus(),
-                            Token.int("1"),
-                        ]
+                    value=NodeBinOp(
+                        Op("+", 1, Associative.LEFT),
+                        literal("1"),
+                        literal("2"),
                     ),
                 )
             ],
-            marks=pytest.mark.xfail,
+            marks=pytest.mark.skip("wip"),
         ),
     ],
 )
@@ -82,6 +80,7 @@ def test_parse(content, statements):
 @pytest.mark.parametrize(
     "code,ast",
     [
+        ("1", literal("1")),
         (
             "1 + 1",
             NodeBinOp(
@@ -136,7 +135,7 @@ def test_parse(content, statements):
                     literal("3"),
                 ),
                 literal("4"),
-            )
+            ),
         ),
     ],
 )

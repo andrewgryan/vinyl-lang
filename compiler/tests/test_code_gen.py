@@ -44,6 +44,7 @@ _start:
             "exit(7 - 3 - 2);",
             id="sub_all",
         ),
+        pytest.param("let x = 2 - 1;", id="assign_expr"),
     ],
 )
 def test_code_gen_aarch64(snapshot, program):

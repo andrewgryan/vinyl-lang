@@ -133,16 +133,21 @@ def exit(status: str):
 
 def parse_exit(tokens, cursor):
     if (tokens[cursor + 0].kind == TokenKind.EXIT) and (
-        tokens[cursor + 1].kind == TokenKind.LEFT_PAREN):
+        tokens[cursor + 1].kind == TokenKind.LEFT_PAREN
+    ):
         status, next_cursor = parse_expression(
             tokens, cursor + 2
         )
         if (
             status
             and (
-                tokens[next_cursor + 0].kind == TokenKind.RIGHT_PAREN
+                tokens[next_cursor + 0].kind
+                == TokenKind.RIGHT_PAREN
             )
-            and (tokens[next_cursor + 1].kind == TokenKind.SEMICOLON)
+            and (
+                tokens[next_cursor + 1].kind
+                == TokenKind.SEMICOLON
+            )
         ):
             return NodeExit(status=status), next_cursor + 2
     return None, cursor
@@ -150,7 +155,7 @@ def parse_exit(tokens, cursor):
 
 def let(identifier: str, value: str):
     return NodeLet(
-        Token.identifier(identifier), Token.int(value)
+        Token.identifier(identifier), NodeInt(Token.int(value))
     )
 
 
@@ -162,7 +167,7 @@ def parse_let(tokens, cursor):
         and (tokens[cursor + 2].kind == TokenKind.EQUAL)
     ):
         identifier = tokens[cursor + 1]
-        expression, next_cursor = parse_arithmetic(
+        expression, next_cursor = parse_expression(
             tokens, cursor + 3
         )
         if expression and (
@@ -186,7 +191,6 @@ def parse_arithmetic(tokens, cursor):
 
 
 def parse_expression(tokens, cursor):
-    # TODO: Support arithmetic expressions
     if tokens[cursor].kind == TokenKind.INT:
         node, next_cursor = parse_binary(tokens, cursor)
         if node:
@@ -209,8 +213,11 @@ def parse_binary(tokens, cursor):
         op, cursor = parse_op(tokens, cursor)
     return lhs, cursor
 
+
 def parse_term(tokens, cursor):
-    if (cursor < len(tokens)) and tokens[cursor].kind == TokenKind.INT:
+    if (cursor < len(tokens)) and tokens[
+        cursor
+    ].kind == TokenKind.INT:
         return NodeInt(tokens[cursor]), cursor + 1
     else:
         return None, cursor
