@@ -99,18 +99,26 @@ def code_gen_statements(statements):
 
 def visit_bin(node):
     if isinstance(node.lhs, NodeBinOp):
+        cmd = {
+            "+": "add",
+            "-": "sub"
+        }[node.operator.operator]
         rhs = int(node.rhs.token.text)
         return visit_bin(node.lhs) + [
             line("mov", "x0", f"#{hex(rhs)}"),
-            line("add", "x1", "x1", "x0")
+            line(cmd, "x1", "x1", "x0")
         ]
     else:
         lhs = int(node.lhs.token.text)
         rhs = int(node.rhs.token.text)
+        cmd = {
+            "+": "add",
+            "-": "sub"
+        }[node.operator.operator]
         return [
-            line("mov", "x0", f"#{hex(lhs)}"),
-            line("mov", "x1", f"#{hex(rhs)}"),
-            line("add", "x1", "x1", "x0")]
+            line("mov", "x1", f"#{hex(lhs)}"),
+            line("mov", "x0", f"#{hex(rhs)}"),
+            line(cmd, "x1", "x1", "x0")]
 
 
 def line(instruction, *args):

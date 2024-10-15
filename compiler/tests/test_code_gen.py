@@ -33,8 +33,16 @@ _start:
             id="addition",
         ),
         pytest.param(
+            "exit(3 - 1);",
+            id="subtraction",
+        ),
+        pytest.param(
             "exit(1 + 2 + 3);",
             id="add_all",
+        ),
+        pytest.param(
+            "exit(7 - 3 - 2);",
+            id="sub_all",
         ),
     ],
 )
