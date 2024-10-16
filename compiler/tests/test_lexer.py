@@ -18,7 +18,7 @@ from compiler.lexer import lex, Token, TokenKind
         ("/", [Token(TokenKind.FORWARD_SLASH, "/")]),
         ("^", [Token(TokenKind.CARET, "^")]),
         ("fn", [Token(TokenKind.FUNCTION, "fn")]),
-        ("main", [Token(TokenKind.IDENTIFIER, "main")])
+        ("main", [Token(TokenKind.IDENTIFIER, "main")]),
     ],
 )
 def test_lex(content, tokens):

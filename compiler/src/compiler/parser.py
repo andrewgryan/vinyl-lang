@@ -83,6 +83,12 @@ class NodeBlock:
     statements: list[NodeStatement]
 
 
+@dataclass
+class NodeFunction:
+    identifier: NodeIdentifier
+    body: NodeBlock
+
+
 def parse(content: str):
     tokens = list(lex(content))
     cursor = 0
@@ -115,6 +121,9 @@ def parse_block(tokens, cursor):
 
 
 def parse_statement(tokens, cursor):
+    statement, cursor = parse_function(tokens, cursor)
+    if statement:
+        return statement, cursor
     statement, cursor = parse_exit(tokens, cursor)
     if statement:
         return statement, cursor
@@ -125,6 +134,39 @@ def parse_statement(tokens, cursor):
     if statement:
         return statement, cursor
     return None, cursor
+
+
+def parse_function(tokens, cursor):
+    original_cursor = cursor
+    if peek(tokens, cursor).kind == TokenKind.FUNCTION:
+        _, cursor = consume(tokens, cursor)
+        identifier, cursor = parse_identifier(tokens, cursor)
+        token, cursor = consume(tokens, cursor)
+        if token.kind != TokenKind.LEFT_PAREN:
+            return False, original_cursor
+        token, cursor = consume(tokens, cursor)
+        if token.kind != TokenKind.RIGHT_PAREN:
+            return False, original_cursor
+        block, cursor = parse_block(tokens, cursor)
+        return NodeFunction(identifier, block), cursor
+    else:
+        return False, original_cursor
+
+
+def parse_identifier(tokens, cursor):
+    if peek(tokens, cursor).kind == TokenKind.IDENTIFIER:
+        token, cursor = consume(tokens, cursor)
+        return NodeIdentifier(token), cursor
+    else:
+        return False, cursor
+
+
+def peek(tokens, cursor):
+    return tokens[cursor]
+
+
+def consume(tokens, cursor):
+    return tokens[cursor], cursor + 1
 
 
 def exit(status: str):

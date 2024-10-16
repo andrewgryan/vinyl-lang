@@ -71,7 +71,7 @@ from compiler.parser import (
             ],
             marks=pytest.mark.skip("wip"),
         ),
-        pytest.param("fn foo() {}", [])
+        pytest.param("fn foo() {}", []),
     ],
 )
 def test_parse(content, statements):
