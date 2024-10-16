@@ -84,12 +84,8 @@ from compiler.parser import (
         ),
         pytest.param(
             "print(42);",
-            [
-                parser.NodePrint(
-                    parser.NodeInt(Token.int("42"))
-                )
-            ]
-        )
+            [parser.NodePrint(parser.NodeInt(Token.int("42")))],
+        ),
     ],
 )
 def test_parse(content, statements):

@@ -56,6 +56,8 @@ def code_gen_statements(statements):
     for statement in statements:
         if isinstance(statement, parser.NodeFunction):
             lines += visit_function(statement)
+        if isinstance(statement, parser.NodePrint):
+            lines += visit_print(statement)
         elif isinstance(statement, NodeExit):
             if isinstance(statement.status, NodeInt):
                 code = int(statement.status.token.text)
@@ -113,6 +115,14 @@ def code_gen_statements(statements):
         ]
     return lines
 
+def visit_print(statement):
+    return [
+        line("mov", "x8", "#0x40"),  # write
+        line("mov", "x0", "#0x1"),  # stdout
+        line("mov", "x1", "#0x40"),  # chars
+        line("mov", "x2", "#0x1"),  # length
+        line("svc", "0")
+    ]
 
 def visit_function(fn):
     return [f"{fn.identifier.token.text}:"] + code_gen_block(
