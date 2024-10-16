@@ -1,4 +1,5 @@
 import pytest
+from compiler import parser
 from compiler.lexer import lex
 from compiler.parser import (
     parse,
@@ -72,14 +73,23 @@ from compiler.parser import (
             ],
             marks=pytest.mark.skip("wip"),
         ),
-        pytest.param("fn foo() {}", [
-                         NodeFunction(
-                             NodeIdentifier(
-                                 Token.identifier("foo")
-                             ),
-                             NodeBlock([])
-                         )
-                     ]),
+        pytest.param(
+            "fn foo() {}",
+            [
+                NodeFunction(
+                    NodeIdentifier(Token.identifier("foo")),
+                    NodeBlock([]),
+                )
+            ],
+        ),
+        pytest.param(
+            "print(42);",
+            [
+                parser.NodePrint(
+                    parser.NodeInt(Token.int("42"))
+                )
+            ]
+        )
     ],
 )
 def test_parse(content, statements):

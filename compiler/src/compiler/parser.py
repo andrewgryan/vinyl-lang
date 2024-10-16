@@ -65,6 +65,11 @@ class NodeExit:
 
 
 @dataclass
+class NodePrint:
+    message: NodeInt
+
+
+@dataclass
 class NodeLet:
     identifier: Token
     value: Token
@@ -125,6 +130,9 @@ def parse_statement(tokens, cursor):
     if statement:
         return statement, cursor
     statement, cursor = parse_exit(tokens, cursor)
+    if statement:
+        return statement, cursor
+    statement, cursor = parse_print(tokens, cursor)
     if statement:
         return statement, cursor
     statement, cursor = parse_let(tokens, cursor)
@@ -193,6 +201,29 @@ def parse_exit(tokens, cursor):
         ):
             return NodeExit(status=status), next_cursor + 2
     return None, cursor
+
+
+def parse_print(tokens, cursor):
+    if peek(tokens, cursor).kind == TokenKind.PRINT:
+        _, cursor = consume(tokens, cursor)
+
+        token, cursor = consume(tokens, cursor)
+        if token.kind != TokenKind.LEFT_PAREN:
+            return False, cursor
+
+        message, cursor = parse_expression(tokens, cursor)
+
+        token, cursor = consume(tokens, cursor)
+        if token.kind != TokenKind.RIGHT_PAREN:
+            return False, cursor
+
+        token, cursor = consume(tokens, cursor)
+        if token.kind != TokenKind.SEMICOLON:
+            return False, cursor
+
+        return NodePrint(message), cursor
+    else:
+        return False, cursor
 
 
 def let(identifier: str, value: str):

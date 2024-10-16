@@ -115,9 +115,10 @@ def code_gen_statements(statements):
 
 
 def visit_function(fn):
-    return [
-        f"{fn.identifier.token.text}:"
-    ] + code_gen_block(fn.body)
+    return [f"{fn.identifier.token.text}:"] + code_gen_block(
+        fn.body
+    )
+
 
 def visit_bin(node):
     if isinstance(node.lhs, NodeBinOp):

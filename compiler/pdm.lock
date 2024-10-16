@@ -5,7 +5,7 @@
 groups = ["default", "dev", "test"]
 strategy = ["inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:9ba8472859428f908dbeff41b0ca010781697abc0722811462ed0d5b54531fea"
+content_hash = "sha256:4ac7d410b10a7f0b07327c0f25d39c1cf6a25d6b31411e2e08f39386188cdf54"
 
 [[package]]
 name = "black"
@@ -169,6 +169,20 @@ files = [
 ]
 
 [[package]]
+name = "pytest-watcher"
+version = "0.4.3"
+requires_python = "<4.0.0,>=3.7.0"
+summary = "Automatically rerun your tests on file modifications"
+groups = ["default"]
+dependencies = [
+    "watchdog>=2.0.0",
+]
+files = [
+    {file = "pytest_watcher-0.4.3-py3-none-any.whl", hash = "sha256:d59b1e1396f33a65ea4949b713d6884637755d641646960056a90b267c3460f9"},
+    {file = "pytest_watcher-0.4.3.tar.gz", hash = "sha256:0cb0e4661648c8c0ff2b2d25efa5a8e421784b9e4c60fcecbf9b7c30b2d731b3"},
+]
+
+[[package]]
 name = "rich"
 version = "13.9.2"
 requires_python = ">=3.8.0"
@@ -220,4 +234,15 @@ groups = ["default"]
 files = [
     {file = "typing_extensions-4.12.2-py3-none-any.whl", hash = "sha256:04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d"},
     {file = "typing_extensions-4.12.2.tar.gz", hash = "sha256:1a7ead55c7e559dd4dee8856e3a88b41225abfe1ce8df57b7c13915fe121ffb8"},
+]
+
+[[package]]
+name = "watchdog"
+version = "5.0.3"
+requires_python = ">=3.9"
+summary = "Filesystem events monitoring"
+groups = ["default"]
+files = [
+    {file = "watchdog-5.0.3-py3-none-manylinux2014_x86_64.whl", hash = "sha256:0f9332243355643d567697c3e3fa07330a1d1abf981611654a1f2bf2175612b7"},
+    {file = "watchdog-5.0.3.tar.gz", hash = "sha256:108f42a7f0345042a854d4d0ad0834b741d421330d5f575b81cb27b883500176"},
 ]
