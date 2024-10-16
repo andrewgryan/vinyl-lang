@@ -45,6 +45,7 @@ _start:
             id="sub_all",
         ),
         pytest.param("let x = 2 - 1;", id="assign_expr"),
+        pytest.param("fn foo() { let x = 1; }", id="fn")
     ],
 )
 def test_code_gen_aarch64(snapshot, program):

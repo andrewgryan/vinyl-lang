@@ -6,6 +6,7 @@ from compiler.parser import (
     NodeInt,
     NodeBlock,
 )
+from compiler import parser
 
 
 def code_gen(program, arch):
@@ -53,7 +54,9 @@ def code_gen_statements(statements):
         ]
 
     for statement in statements:
-        if isinstance(statement, NodeExit):
+        if isinstance(statement, parser.NodeFunction):
+            lines += visit_function(statement)
+        elif isinstance(statement, NodeExit):
             if isinstance(statement.status, NodeInt):
                 code = int(statement.status.token.text)
                 lines += [
@@ -110,6 +113,11 @@ def code_gen_statements(statements):
         ]
     return lines
 
+
+def visit_function(fn):
+    return [
+        f"{fn.identifier.token.text}:"
+    ] + code_gen_block(fn.body)
 
 def visit_bin(node):
     if isinstance(node.lhs, NodeBinOp):
