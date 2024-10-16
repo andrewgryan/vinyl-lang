@@ -13,6 +13,7 @@ from compiler.parser import (
     NodeExit,
     NodeExpression,
     NodeIdentifier,
+    NodeFunction,
     Token,
     Op,
     Associative,
@@ -71,7 +72,14 @@ from compiler.parser import (
             ],
             marks=pytest.mark.skip("wip"),
         ),
-        pytest.param("fn foo() {}", []),
+        pytest.param("fn foo() {}", [
+                         NodeFunction(
+                             NodeIdentifier(
+                                 Token.identifier("foo")
+                             ),
+                             NodeBlock([])
+                         )
+                     ]),
     ],
 )
 def test_parse(content, statements):
