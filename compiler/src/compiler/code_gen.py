@@ -7,18 +7,10 @@ from compiler.parser import (
     NodeBlock,
 )
 from compiler import parser
-from dataclasses import dataclass
+from collections import namedtuple
 
 
-@dataclass
-class ProgramArm64:
-    text: list[str]
-    data: list[str]
-
-    def render(self):
-        header = [".global _start", ".section .text", "", "_start:"]
-        lines = header + self.text
-        return "\n".join(lines) + "\n"
+Arm64 = namedtuple("Arm64", "data text")
 
 
 def code_gen(program, arch):
@@ -36,9 +28,9 @@ def stack_alignment(address: int):
 
 
 def code_gen_aaarch64(ast):
-    program = ProgramArm64(text=[], data=[])
-    program.text += code_gen_statements(ast.statements)
-    return program.render()
+    lines = [".global _start", ".section .text", "", "_start:"]
+    lines += code_gen_statements(ast.statements)
+    return "\n".join(lines) + "\n"
 
 
 def code_gen_block(block) -> list[str]:
@@ -69,7 +61,9 @@ def code_gen_statements(statements):
         if isinstance(statement, parser.NodeFunction):
             lines += visit_function(statement)
         if isinstance(statement, parser.NodePrint):
-            lines += visit_print(statement)
+            program = visit_print(statement)
+            print(program.data)
+            lines += program.text
         elif isinstance(statement, NodeExit):
             if isinstance(statement.status, NodeInt):
                 code = int(statement.status.token.text)
@@ -127,14 +121,22 @@ def code_gen_statements(statements):
         ]
     return lines
 
+
 def visit_print(statement):
-    return [
-        line("mov", "x8", "#0x40"),  # write
-        line("mov", "x0", "#0x1"),  # stdout
-        line("mov", "x1", "#0x40"),  # chars
-        line("mov", "x2", "#0x1"),  # length
-        line("svc", "0")
-    ]
+    return Program(
+        [
+            "msg:",
+            f"    .ascii \"{statement.}\""
+        ],
+        [
+            line("mov", "x8", "#0x40"),  # write
+            line("mov", "x0", "#0x1"),  # stdout
+            line("mov", "x1", "#0x40"),  # chars
+            line("mov", "x2", "#0x1"),  # length
+            line("svc", "0"),
+        ],
+    )
+
 
 def visit_function(fn):
     return [f"{fn.identifier.token.text}:"] + code_gen_block(
