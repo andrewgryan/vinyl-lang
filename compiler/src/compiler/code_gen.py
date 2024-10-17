@@ -16,7 +16,9 @@ class ProgramArm64:
     data: list[str]
 
     def render(self):
-        return "\n".join(self.text) + "\n"
+        header = [".global _start", ".section .text", "", "_start:"]
+        lines = header + self.text
+        return "\n".join(lines) + "\n"
 
 
 def code_gen(program, arch):
@@ -34,8 +36,7 @@ def stack_alignment(address: int):
 
 
 def code_gen_aaarch64(ast):
-    text = [".global _start", ".section .text", "", "_start:"]
-    program = ProgramArm64(text=text, data=[])
+    program = ProgramArm64(text=[], data=[])
     program.text += code_gen_statements(ast.statements)
     return program.render()
 
