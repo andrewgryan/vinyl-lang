@@ -7,6 +7,16 @@ from compiler.parser import (
     NodeBlock,
 )
 from compiler import parser
+from dataclasses import dataclass
+
+
+@dataclass
+class ProgramArm64:
+    text: list[str]
+    data: list[str]
+
+    def render(self):
+        return "\n".join(self.text) + "\n"
 
 
 def code_gen(program, arch):
@@ -23,10 +33,11 @@ def stack_alignment(address: int):
         return ((address >> 4) + 1) << 4
 
 
-def code_gen_aaarch64(program):
-    lines = [".global _start", ".section .text", "", "_start:"]
-    lines += code_gen_statements(program.statements)
-    return "\n".join(lines) + "\n"
+def code_gen_aaarch64(ast):
+    text = [".global _start", ".section .text", "", "_start:"]
+    program = ProgramArm64(text=text, data=[])
+    program.text += code_gen_statements(ast.statements)
+    return program.render()
 
 
 def code_gen_block(block) -> list[str]:
