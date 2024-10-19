@@ -2,7 +2,7 @@
 
 .data
 msg:
-        .ascii "Hello, World!\n"
+        .ascii "42\n"
 msg_len = . - msg
 
 .section .text

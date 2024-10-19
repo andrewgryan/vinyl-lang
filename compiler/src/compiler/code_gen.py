@@ -7,10 +7,8 @@ from compiler.parser import (
     NodeBlock,
 )
 from compiler import parser
-from collections import namedtuple
 
 
-Arm64 = namedtuple("Arm64", "data text")
 
 
 def code_gen(program, arch):
@@ -28,9 +26,26 @@ def stack_alignment(address: int):
 
 
 def code_gen_aaarch64(ast):
-    lines = [".global _start", ".section .text", "", "_start:"]
+    lines = [".global _start"]
+    lines += data_section(ast)
+    lines += [".section .text", "", "_start:"]
     lines += code_gen_statements(ast.statements)
     return "\n".join(lines) + "\n"
+
+
+def data_section(ast):
+    lines = []
+    for statement in ast.statements:
+        if isinstance(statement, parser.NodePrint):
+            lines += [
+                "",
+                ".data",
+                "msg:",
+                f"        .ascii \"{statement.message.token.text}\\n\"",
+                "msg_len = . - msg",
+                ""
+            ]
+    return lines
 
 
 def code_gen_block(block) -> list[str]:
@@ -61,9 +76,7 @@ def code_gen_statements(statements):
         if isinstance(statement, parser.NodeFunction):
             lines += visit_function(statement)
         if isinstance(statement, parser.NodePrint):
-            program = visit_print(statement)
-            print(program.data)
-            lines += program.text
+            lines += visit_print(statement)
         elif isinstance(statement, NodeExit):
             if isinstance(statement.status, NodeInt):
                 code = int(statement.status.token.text)
@@ -123,19 +136,13 @@ def code_gen_statements(statements):
 
 
 def visit_print(statement):
-    return Program(
-        [
-            "msg:",
-            f"    .ascii \"{statement.}\""
-        ],
-        [
+    return [
             line("mov", "x8", "#0x40"),  # write
             line("mov", "x0", "#0x1"),  # stdout
-            line("mov", "x1", "#0x40"),  # chars
-            line("mov", "x2", "#0x1"),  # length
+            line("ldr", "x1", "=msg"),  # chars
+            line("ldr", "x2", "=msg_len"),  # length
             line("svc", "0"),
-        ],
-    )
+        ]
 
 
 def visit_function(fn):
