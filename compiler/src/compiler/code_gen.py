@@ -33,20 +33,31 @@ def code_gen_aaarch64(ast):
     return "\n".join(lines) + "\n"
 
 
-def data_section(ast):
-    lines = []
-    print_count = 0
-    for statement in ast.statements:
-        if isinstance(statement, parser.NodePrint):
-            lines += [
-                f"p{print_count}:",
-                f"        .ascii \"{statement.message.token.text}\\n\"",
-                f"p{print_count}_len = . - p{print_count}",
-            ]
-            print_count += 1
+def data_section(ast, count=0):
+    lines, _ = data_block(ast, count)
     if len(lines) > 0:
         lines = ["", ".data"] + lines + [""]
     return lines
+
+
+def data_block(ast, count=0):
+    lines = []
+    for statement in ast.statements:
+        if isinstance(statement, parser.NodeFunction):
+            _lines, count = data_block(statement.body, count=count)
+            lines += _lines
+        if isinstance(statement, parser.NodePrint):
+            lines += data_print(count, statement.message.token.text)
+            count += 1
+    return lines, count
+
+
+def data_print(count, text):
+    return [
+        f"p{count}:",
+        f"        .ascii \"{text}\\n\"",
+        f"p{count}_len = . - p{count}",
+    ]
 
 
 def code_gen_block(block) -> list[str]:
