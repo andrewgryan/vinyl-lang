@@ -6,16 +6,14 @@ from compiler.parser import (
     NodeInt,
     NodeBlock,
 )
-from compiler import parser
-
-
+from compiler import parser, x86_64
 
 
 def code_gen(program, arch):
     if arch == Arch.aarch64:
         return code_gen_aaarch64(program)
     else:
-        return code_gen_x86_64(program)
+        return x86_64.code_gen_x86_64(program)
 
 
 def stack_alignment(address: int):
@@ -28,7 +26,9 @@ def stack_alignment(address: int):
 def code_gen_aaarch64(ast):
     lines = [".global _start"]
     lines += data_section(ast)
-    lines += [".section .text", "", "_start:"]
+    lines += [".section .text", ""]
+    lines += code_gen_functions(ast)
+    lines += ["_start:"]
     lines += code_gen_statements(ast.statements)
     return "\n".join(lines) + "\n"
 
@@ -44,10 +44,14 @@ def data_block(ast, count=0):
     lines = []
     for statement in ast.statements:
         if isinstance(statement, parser.NodeFunction):
-            _lines, count = data_block(statement.body, count=count)
+            _lines, count = data_block(
+                statement.body, count=count
+            )
             lines += _lines
         if isinstance(statement, parser.NodePrint):
-            lines += data_print(count, statement.message.token.text)
+            lines += data_print(
+                count, statement.message.token.text
+            )
             count += 1
     return lines, count
 
@@ -55,13 +59,21 @@ def data_block(ast, count=0):
 def data_print(count, text):
     return [
         f"p{count}:",
-        f"        .ascii \"{text}\\n\"",
+        f'        .ascii "{text}\\n"',
         f"p{count}_len = . - p{count}",
     ]
 
 
 def code_gen_block(block) -> list[str]:
     return code_gen_statements(block.statements)
+
+
+def code_gen_functions(ast):
+    lines = []
+    for statement in ast.statements:
+        if isinstance(statement, parser.NodeFunction):
+            lines += visit_function(statement)
+    return lines
 
 
 def code_gen_statements(statements):
@@ -86,8 +98,8 @@ def code_gen_statements(statements):
 
     print_count = 0
     for statement in statements:
-        if isinstance(statement, parser.NodeFunction):
-            lines += visit_function(statement)
+        if isinstance(statement, parser.NodeCall):
+            lines += visit_call(statement)
         if isinstance(statement, parser.NodePrint):
             lines += visit_print(statement, print_count)
             print_count += 1
@@ -149,20 +161,24 @@ def code_gen_statements(statements):
     return lines
 
 
+def visit_call(statement: parser.NodeCall):
+    return [line("call", statement.identifier.token.text)]
+
+
 def visit_print(statement: parser.NodePrint, count: int):
     return [
-            line("mov", "x8", "#0x40"),  # write
-            line("mov", "x0", "#0x1"),  # stdout
-            line("ldr", "x1", f"=p{count}"),  # chars
-            line("ldr", "x2", f"=p{count}_len"),  # length
-            line("svc", "0"),
-        ]
+        line("mov", "x8", "#0x40"),  # write
+        line("mov", "x0", "#0x1"),  # stdout
+        line("ldr", "x1", f"=p{count}"),  # chars
+        line("ldr", "x2", f"=p{count}_len"),  # length
+        line("svc", "0"),
+    ]
 
 
 def visit_function(fn):
     return [f"{fn.identifier.token.text}:"] + code_gen_block(
         fn.body
-    )
+    ) + [""]
 
 
 def visit_bin(node):
@@ -186,49 +202,3 @@ def visit_bin(node):
 
 def line(instruction, *args):
     return f"        {instruction} {', '.join(args)}"
-
-
-def code_gen_x86_64(program):
-    content = """
-    .text
-    .globl _start
-
-_start:
-"""
-    # Stack allocate space for variables
-    declarations = []
-    for statement in program.statements:
-        if isinstance(statement, NodeLet):
-            declarations.append(statement.identifier.text)
-
-    if len(declarations) > 0:
-        content += f"""
-        push  %rbp
-        mov   %rsp, %rbp
-        sub   ${8 * len(declarations)}, %rsp
-"""
-
-    # Exit statement(s)
-    for statement in program.statements:
-        if isinstance(statement, NodeExit):
-            code = int(statement.status.token.text)
-            content += f"""
-        mov $60, %rax
-        mov ${code}, %rdi
-        syscall
-"""
-        elif isinstance(statement, NodeLet):
-            index = declarations.index(statement.identifier.text)
-            value = int(statement.value.token.text)
-            content += f"""
-        mov  ${index}, %rdi
-        movq ${value}, (%rsp, %rdi, 8)
-"""
-
-    # Restore stack pointer
-    if len(declarations) > 0:
-        content += """
-        mov  %rbp, %rsp
-        pop  %rbp
-"""
-    return content

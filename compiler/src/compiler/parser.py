@@ -94,6 +94,11 @@ class NodeFunction:
     body: NodeBlock
 
 
+@dataclass
+class NodeCall:
+    identifier: NodeIdentifier
+
+
 def parse(content: str):
     tokens = list(lex(content))
     cursor = 0
@@ -133,6 +138,9 @@ def parse_statement(tokens, cursor):
     if statement:
         return statement, cursor
     statement, cursor = parse_print(tokens, cursor)
+    if statement:
+        return statement, cursor
+    statement, cursor = parse_call(tokens, cursor)
     if statement:
         return statement, cursor
     statement, cursor = parse_let(tokens, cursor)
@@ -222,6 +230,27 @@ def parse_print(tokens, cursor):
             return False, cursor
 
         return NodePrint(message), cursor
+    else:
+        return False, cursor
+
+
+def parse_call(tokens, cursor):
+    if peek(tokens, cursor).kind == TokenKind.IDENTIFIER:
+        identifier, cursor = consume(tokens, cursor)
+
+        token, cursor = consume(tokens, cursor)
+        if token.kind != TokenKind.LEFT_PAREN:
+            return False, cursor
+
+        token, cursor = consume(tokens, cursor)
+        if token.kind != TokenKind.RIGHT_PAREN:
+            return False, cursor
+
+        token, cursor = consume(tokens, cursor)
+        if token.kind != TokenKind.SEMICOLON:
+            return False, cursor
+
+        return NodeCall(NodeIdentifier(identifier)), cursor
     else:
         return False, cursor
 
