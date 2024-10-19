@@ -15,4 +15,4 @@ foo:
         svc 0
 
 _start:
-        call foo
+        bl foo

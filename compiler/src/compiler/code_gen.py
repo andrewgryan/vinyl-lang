@@ -162,7 +162,7 @@ def code_gen_statements(statements):
 
 
 def visit_call(statement: parser.NodeCall):
-    return [line("call", statement.identifier.token.text)]
+    return [line("bl", statement.identifier.token.text)]
 
 
 def visit_print(statement: parser.NodePrint, count: int):
