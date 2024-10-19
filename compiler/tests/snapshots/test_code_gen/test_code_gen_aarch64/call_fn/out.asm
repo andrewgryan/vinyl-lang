@@ -13,6 +13,7 @@ foo:
         ldr x1, =p0
         ldr x2, =p0_len
         svc 0
+ret
 
 _start:
         bl foo
