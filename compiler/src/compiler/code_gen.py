@@ -35,16 +35,17 @@ def code_gen_aaarch64(ast):
 
 def data_section(ast):
     lines = []
+    print_count = 0
     for statement in ast.statements:
         if isinstance(statement, parser.NodePrint):
             lines += [
-                "",
-                ".data",
-                "msg:",
+                f"p{print_count}:",
                 f"        .ascii \"{statement.message.token.text}\\n\"",
-                "msg_len = . - msg",
-                ""
+                f"p{print_count}_len = . - p{print_count}",
             ]
+            print_count += 1
+    if len(lines) > 0:
+        lines = ["", ".data"] + lines + [""]
     return lines
 
 
@@ -72,11 +73,13 @@ def code_gen_statements(statements):
             )
         ]
 
+    print_count = 0
     for statement in statements:
         if isinstance(statement, parser.NodeFunction):
             lines += visit_function(statement)
         if isinstance(statement, parser.NodePrint):
-            lines += visit_print(statement)
+            lines += visit_print(statement, print_count)
+            print_count += 1
         elif isinstance(statement, NodeExit):
             if isinstance(statement.status, NodeInt):
                 code = int(statement.status.token.text)
@@ -135,12 +138,12 @@ def code_gen_statements(statements):
     return lines
 
 
-def visit_print(statement):
+def visit_print(statement: parser.NodePrint, count: int):
     return [
             line("mov", "x8", "#0x40"),  # write
             line("mov", "x0", "#0x1"),  # stdout
-            line("ldr", "x1", "=msg"),  # chars
-            line("ldr", "x2", "=msg_len"),  # length
+            line("ldr", "x1", f"=p{count}"),  # chars
+            line("ldr", "x2", f"=p{count}_len"),  # length
             line("svc", "0"),
         ]
 
