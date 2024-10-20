@@ -176,9 +176,11 @@ def visit_print(statement: parser.NodePrint, count: int):
 
 
 def visit_function(fn):
-    return [f"{fn.identifier.token.text}:"] + code_gen_block(
-        fn.body
-    ) + ["ret", ""]
+    return (
+        [f"{fn.identifier.token.text}:"]
+        + code_gen_block(fn.body)
+        + ["ret", ""]
+    )
 
 
 def visit_bin(node):

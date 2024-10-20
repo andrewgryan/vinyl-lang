@@ -47,6 +47,7 @@ _start:
         pytest.param("let x = 2 - 1;", id="assign_expr"),
         pytest.param("fn foo() { let x = 1; }", id="fn"),
         pytest.param("print(42);", id="print"),
+        pytest.param("let x = 4;print(x);", id="print_let"),
         pytest.param("print(42);print(7);", id="print_x2"),
         pytest.param(
             "fn foo() { print(42); }\nfoo();", id="call_fn"

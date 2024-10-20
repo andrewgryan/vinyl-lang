@@ -94,6 +94,14 @@ from compiler.parser import (
                 )
             ],
         ),
+        pytest.param(
+            "print(x);",
+            [
+                parser.NodePrint(
+                    parser.NodeIdentifier(Token.identifier("x"))
+                )
+            ],
+        ),
     ],
 )
 def test_parse(content, statements):

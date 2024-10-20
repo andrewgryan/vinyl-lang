@@ -1,6 +1,3 @@
-
-
-
 def code_gen_x86_64(program):
     content = """
     .text
