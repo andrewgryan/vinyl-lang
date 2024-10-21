@@ -1,10 +1,12 @@
 all: hello dump
 
+target = aarch64
+
 hello: hello.o
-	aarch64-linux-gnu-gcc hello.o -o hello
+	$(target)-linux-gnu-gcc hello.o -o hello
 
 hello.o: hello.c
-	aarch64-linux-gnu-gcc -c hello.c
+	$(target)-linux-gnu-gcc -c hello.c
 
 dump: hello.o
-	aarch64-linux-gnu-objdump -d hello.o
+	$(target)-linux-gnu-objdump -d hello.o
