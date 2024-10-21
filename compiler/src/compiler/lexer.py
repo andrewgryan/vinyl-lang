@@ -21,6 +21,7 @@ class TokenKind(Enum):
     CARET = 16
     FUNCTION = 17
     PRINT = 18
+    RETURN = 19
 
 
 @dataclass
@@ -88,6 +89,7 @@ def lex_keyword(key, cursor, content):
         "exit": TokenKind.EXIT,
         "fn": TokenKind.FUNCTION,
         "print": TokenKind.PRINT,
+        "return": TokenKind.RETURN,
     }
     length = len(key)
     token = Token(
@@ -130,6 +132,11 @@ def lex(content):
             yield token
         elif content[cursor:].startswith("print"):
             cursor, token = lex_keyword("print", cursor, content)
+            yield token
+        elif content[cursor:].startswith("return"):
+            cursor, token = lex_keyword(
+                "return", cursor, content
+            )
             yield token
         elif content[cursor].isalpha():
             cursor, token = lex_identifier(cursor, content)

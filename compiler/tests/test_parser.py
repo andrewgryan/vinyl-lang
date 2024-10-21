@@ -12,7 +12,6 @@ from compiler.parser import (
     NodeBlock,
     NodeBinOp,
     NodeExit,
-    NodeExpression,
     NodeIdentifier,
     NodeFunction,
     Token,
@@ -101,6 +100,10 @@ from compiler.parser import (
                     parser.NodeIdentifier(Token.identifier("x"))
                 )
             ],
+        ),
+        pytest.param(
+            "return 5;",
+            [parser.NodeReturn(parser.NodeInt(Token.int("5")))],
         ),
     ],
 )

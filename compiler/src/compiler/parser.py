@@ -39,17 +39,6 @@ def literal(value):
 
 
 @dataclass
-class NodeExpression:
-    tokens: list[Token]
-
-
-@dataclass
-class NodeAdd:
-    lhs: NodeExpression
-    rhs: NodeExpression
-
-
-@dataclass
 class NodeInt:
     token: Token
 
@@ -99,6 +88,11 @@ class NodeCall:
     identifier: NodeIdentifier
 
 
+@dataclass
+class NodeReturn:
+    expression: str
+
+
 def parse(content: str):
     tokens = list(lex(content))
     cursor = 0
@@ -138,6 +132,9 @@ def parse_statement(tokens, cursor):
     if statement:
         return statement, cursor
     statement, cursor = parse_print(tokens, cursor)
+    if statement:
+        return statement, cursor
+    statement, cursor = parse_return(tokens, cursor)
     if statement:
         return statement, cursor
     statement, cursor = parse_call(tokens, cursor)
@@ -251,6 +248,15 @@ def parse_call(tokens, cursor):
             return False, cursor
 
         return NodeCall(NodeIdentifier(identifier)), cursor
+    else:
+        return False, cursor
+
+
+def parse_return(tokens, cursor):
+    if peek(tokens, cursor).kind == TokenKind.RETURN:
+        _, cursor = consume(tokens, cursor)
+        expression, cursor = parse_expression(tokens, cursor)
+        return NodeReturn(expression), cursor
     else:
         return False, cursor
 

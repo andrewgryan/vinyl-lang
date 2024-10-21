@@ -20,6 +20,7 @@ from compiler.lexer import lex, Token, TokenKind
         ("fn", [Token(TokenKind.FUNCTION, "fn")]),
         ("main", [Token(TokenKind.IDENTIFIER, "main")]),
         ("print", [Token(TokenKind.PRINT, "print")]),
+        ("return", [Token(TokenKind.RETURN, "return")]),
     ],
 )
 def test_lex(content, tokens):
