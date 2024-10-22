@@ -1,14 +1,17 @@
         .global _start
         .text
+
+foo:
+        push       %rbp
+        mov        %rsp, %rbp
+        mov        $7, %rax
+        mov        %rbp, %rsp
+        pop        %rbp
+        ret
+
 _start:
-        mov        $1, %rax
-        mov        $1, %rdi
-        mov        $message, %rsi
-        mov        $14, %rdx
-        syscall
+        call       foo
 
         mov        $60, %rax
-        xor        %rdi, %rdi
+        mov        $1, %rdi
         syscall
-message:
-        .ascii "Hello, World!\n"
