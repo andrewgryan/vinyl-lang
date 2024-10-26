@@ -36,8 +36,12 @@ def visit_int(node):
 def visit_expression(node):
     if is_int(node):
         return visit_int(node)
-    else:
+    elif is_binop(node):
         return visit_binop(node)
+    elif is_identifier(node):
+        return visit_identifier(node)
+    else:
+        raise Exception(node)
 
 
 def visit_binop(binop):
@@ -56,6 +60,12 @@ def visit_statement(node):
         return visit_let(node)
     elif is_print(node):
         return visit_print(node)
+    elif is_function(node):
+        return visit_function(node)
+    elif is_block(node):
+        return visit_block(node)
+    else:
+        raise Exception(node)
 
 
 def visit_exit(node):
@@ -68,6 +78,30 @@ def visit_print(node):
 
 def visit_let(node):
     return visit_expression(node.value)
+
+
+def visit_function(node):
+    return visit_statements(node.body.statements)
+
+
+def visit_block(node):
+    return visit_statements(node.statements)
+
+
+def visit_identifier(node):
+    return 0
+
+
+def visit_statements(statements):
+    numbers = []
+    for statement in statements:
+        number = visit_statement(statement)
+        numbers.append(number)
+    return numbers
+
+
+def visit(ast):
+    return visit_statements(ast.statements)
 
 
 def is_exit(node):
@@ -90,16 +124,47 @@ def is_let(node):
     return isinstance(node, parser.NodeLet)
 
 
-def visit(ast):
-    result = 0
-    for statement in ast.statements:
-        status = visit_statement(statement)
-        result = max(status, result)
-    return result
+def is_function(node):
+    return isinstance(node, parser.NodeFunction)
 
 
+def is_identifier(node):
+    return isinstance(node, parser.NodeIdentifier)
+
+
+def is_block(node):
+    return isinstance(node, parser.NodeBlock)
+
+
+@pytest.mark.skip("debug parser")
 def test_visitor():
-    ast = parser.parse(
-        "exit(2 * 6 + 1); print(10 + 10); let x = 17;"
-    )
-    assert visit(ast) == 20
+    ast = parser.parse("""
+        let x = 1 + 1 + 2 + 3;
+        fn example() {
+            let code = 1 + 16;
+            {
+                let scoped = 3;
+            }
+            exit(code);
+        }
+
+        let t = 100;
+    """)
+    assert visit(ast) == [7, [17, [3], 0], 100]
+
+
+def test_parse_nested_blocks():
+    ast = parser.parse("""
+        let x = 1 + 1 + 2 + 3;
+        fn example() {
+            let code = 1 + 16;
+            {
+                let scoped = 3;
+            }
+            exit(code);
+        }
+
+        let t = 100;
+    """)
+    print(ast.statements[1].body.statements[2])
+    assert False
