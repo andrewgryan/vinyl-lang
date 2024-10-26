@@ -9,8 +9,16 @@ import pytest
         (
             "let x = 1;let y = 2;",
             [
-                (ir.COPY, ir.Lit(1), ir.Var("x", "u32", "_start")),
-                (ir.COPY, ir.Lit(2), ir.Var("y", "u32", "_start")),
+                (
+                    ir.COPY,
+                    ir.Lit(1),
+                    ir.Var("x", "u32", "_start"),
+                ),
+                (
+                    ir.COPY,
+                    ir.Lit(2),
+                    ir.Var("y", "u32", "_start"),
+                ),
             ],
         ),
     ],
@@ -89,6 +97,9 @@ def visit(ast):
         result = max(status, result)
     return result
 
+
 def test_visitor():
-    ast = parser.parse("exit(2 * 6 + 1); print(10 + 10); let x = 17;")
+    ast = parser.parse(
+        "exit(2 * 6 + 1); print(10 + 10); let x = 17;"
+    )
     assert visit(ast) == 20
