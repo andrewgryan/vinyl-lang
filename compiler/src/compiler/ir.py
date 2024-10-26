@@ -20,7 +20,7 @@ def translate(ast):
     ops = []
     for statement in ast.statements:
         if hasattr(statement, "identifier"):
-            id = statement.identifier.text
+            id = statement.identifier.token.text
             value = int(statement.value.token.text)
             op = (
                 COPY,

@@ -69,7 +69,7 @@ def visit_statement(node):
 
 
 def visit_exit(node):
-    return visit_expression(node.status)
+    return ("EXIT", visit_expression(node.status))
 
 
 def visit_print(node):
@@ -77,7 +77,11 @@ def visit_print(node):
 
 
 def visit_let(node):
-    return visit_expression(node.value)
+    return (
+        "LET",
+        visit_identifier(node.identifier),
+        visit_expression(node.value),
+    )
 
 
 def visit_function(node):
@@ -89,14 +93,19 @@ def visit_block(node):
 
 
 def visit_identifier(node):
-    return 0
+    return node.token.text
 
 
 def visit_statements(statements):
     numbers = []
     for statement in statements:
         number = visit_statement(statement)
-        numbers.append(number)
+        if isinstance(number, list):
+            numbers.append(("SCOPE", "START"))
+            numbers += number
+            numbers.append(("SCOPE", "END"))
+        else:
+            numbers.append(number)
     return numbers
 
 
@@ -136,9 +145,9 @@ def is_block(node):
     return isinstance(node, parser.NodeBlock)
 
 
-@pytest.mark.skip("debug parser")
 def test_visitor():
-    ast = parser.parse("""
+    ast = parser.parse(
+        """
         let x = 1 + 1 + 2 + 3;
         fn example() {
             let code = 1 + 16;
@@ -148,23 +157,17 @@ def test_visitor():
             exit(code);
         }
 
-        let t = 100;
-    """)
-    assert visit(ast) == [7, [17, [3], 0], 100]
-
-
-def test_parse_nested_blocks():
-    ast = parser.parse("""
-        let x = 1 + 1 + 2 + 3;
-        fn example() {
-            let code = 1 + 16;
-            {
-                let scoped = 3;
-            }
-            exit(code);
-        }
-
-        let t = 100;
-    """)
-    print(ast.statements[1].body.statements[2])
-    assert False
+        let t = 10 * 10;
+    """
+    )
+    assert visit(ast) == [
+        ("LET", "x", 7),
+        ("SCOPE", "START"),
+        ("LET", "code", 17),
+        ("SCOPE", "START"),
+        ("LET", "scoped", 3),
+        ("SCOPE", "END"),
+        ("EXIT", "code"),
+        ("SCOPE", "END"),
+        ("LET", "t", 100),
+    ]

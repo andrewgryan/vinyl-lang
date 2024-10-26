@@ -82,7 +82,7 @@ def code_gen_statements(statements):
     declarations = []
     for statement in statements:
         if isinstance(statement, NodeLet):
-            declarations.append(statement.identifier.text)
+            declarations.append(statement.identifier.token.text)
 
     # Decrement stack pointer
     size_in_bytes = stack_alignment(8 * len(declarations))
@@ -140,7 +140,9 @@ def code_gen_statements(statements):
                 lines += visit_bin(statement.value)
 
             # Store value on stack
-            index = declarations.index(statement.identifier.text)
+            index = declarations.index(
+                statement.identifier.token.text
+            )
             offset = (index + 1) * 8
             lines += [
                 line("str", "x1", f"[sp, #{hex(offset)}]"),

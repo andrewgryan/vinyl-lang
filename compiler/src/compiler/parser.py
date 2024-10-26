@@ -60,7 +60,7 @@ class NodePrint:
 
 @dataclass
 class NodeLet:
-    identifier: Token
+    identifier: NodeIdentifier
     value: Token
 
 
@@ -108,6 +108,7 @@ def parse(content: str):
 
 
 def parse_block(tokens, cursor):
+    original_cursor = cursor
     if tokens[cursor].kind == TokenKind.OPEN_BRACE:
         cursor += 1
         statements = []
@@ -119,9 +120,9 @@ def parse_block(tokens, cursor):
                 statements.append(statement)
             else:
                 cursor += 1
-        return NodeBlock(statements), cursor
+        return NodeBlock(statements), cursor + 1
     else:
-        return None, cursor
+        return None, original_cursor
 
 
 def parse_statement(tokens, cursor):
@@ -263,7 +264,8 @@ def parse_return(tokens, cursor):
 
 def let(identifier: str, value: str):
     return NodeLet(
-        Token.identifier(identifier), NodeInt(Token.int(value))
+        NodeIdentifier(Token.identifier(identifier)),
+        NodeInt(Token.int(value)),
     )
 
 
@@ -274,7 +276,7 @@ def parse_let(tokens, cursor):
         and (tokens[cursor + 1].kind == TokenKind.IDENTIFIER)
         and (tokens[cursor + 2].kind == TokenKind.EQUAL)
     ):
-        identifier = tokens[cursor + 1]
+        identifier = NodeIdentifier(tokens[cursor + 1])
         expression, next_cursor = parse_expression(
             tokens, cursor + 3
         )
