@@ -105,6 +105,21 @@ from compiler.parser import (
             "return 5;",
             [parser.NodeReturn(parser.NodeInt(Token.int("5")))],
         ),
+        pytest.param(
+            "let y = x + 1;",
+            [
+                parser.NodeLet(
+                    parser.NodeIdentifier(Token.identifier("y")),
+                    parser.NodeBinOp(
+                        Op("+", 1, Associative.LEFT),
+                        parser.NodeIdentifier(
+                            Token.identifier("x")
+                        ),
+                        parser.NodeInt(Token.int("1")),
+                    ),
+                )
+            ],
+        ),
     ],
 )
 def test_parse(content, statements):

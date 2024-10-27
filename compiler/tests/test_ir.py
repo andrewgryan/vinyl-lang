@@ -48,7 +48,10 @@ def visit_binop(binop):
     lhs = visit_expression(binop.lhs)
     rhs = visit_expression(binop.rhs)
     if binop.operator.operator == "+":
-        return lhs + rhs
+        try:
+            return lhs + rhs
+        except TypeError:
+            return ("ADD", lhs, rhs)
     elif binop.operator.operator == "*":
         return lhs * rhs
 
@@ -77,6 +80,7 @@ def visit_print(node):
 
 
 def visit_let(node):
+    expr = visit_expression(node.value)
     return (
         "LET",
         visit_identifier(node.identifier),
@@ -85,11 +89,15 @@ def visit_let(node):
 
 
 def visit_function(node):
-    return visit_statements(node.body.statements)
+    pre = [("FUNCTION", "START")]
+    post = [("FUNCTION", "END")]
+    return pre + visit_statements(node.body.statements) + post
 
 
 def visit_block(node):
-    return visit_statements(node.statements)
+    pre = [("BLOCK", "START")]
+    post = [("BLOCK", "END")]
+    return pre + visit_statements(node.statements) + post
 
 
 def visit_identifier(node):
@@ -101,9 +109,7 @@ def visit_statements(statements):
     for statement in statements:
         number = visit_statement(statement)
         if isinstance(number, list):
-            numbers.append(("SCOPE", "START"))
             numbers += number
-            numbers.append(("SCOPE", "END"))
         else:
             numbers.append(number)
     return numbers
@@ -150,7 +156,7 @@ def test_visitor():
         """
         let x = 1 + 1 + 2 + 3;
         fn example() {
-            let code = 1 + 16;
+            let code = x + 16;
             {
                 let scoped = 3;
             }
@@ -160,14 +166,15 @@ def test_visitor():
         let t = 10 * 10;
     """
     )
+    assert is_let(ast.statements[1].body.statements[0])
     assert visit(ast) == [
         ("LET", "x", 7),
-        ("SCOPE", "START"),
-        ("LET", "code", 17),
-        ("SCOPE", "START"),
+        ("FUNCTION", "START"),
+        ("LET", "code", ("ADD", "x", 16)),
+        ("BLOCK", "START"),
         ("LET", "scoped", 3),
-        ("SCOPE", "END"),
+        ("BLOCK", "END"),
         ("EXIT", "code"),
-        ("SCOPE", "END"),
+        ("FUNCTION", "END"),
         ("LET", "t", 100),
     ]

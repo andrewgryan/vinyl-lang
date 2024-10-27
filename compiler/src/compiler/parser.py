@@ -308,7 +308,11 @@ def parse_expression(tokens, cursor):
         else:
             return NodeInt(tokens[cursor]), cursor + 1
     elif tokens[cursor].kind == TokenKind.IDENTIFIER:
-        return NodeIdentifier(tokens[cursor]), cursor + 1
+        node, next_cursor = parse_binary(tokens, cursor)
+        if node:
+            return node, next_cursor
+        else:
+            return NodeIdentifier(tokens[cursor]), cursor + 1
     else:
         return None, cursor
 
@@ -325,10 +329,12 @@ def parse_binary(tokens, cursor):
 
 
 def parse_term(tokens, cursor):
-    if (cursor < len(tokens)) and tokens[
-        cursor
-    ].kind == TokenKind.INT:
+    if cursor >= len(tokens):
+        return None, cursor
+    if tokens[cursor].kind == TokenKind.INT:
         return NodeInt(tokens[cursor]), cursor + 1
+    elif tokens[cursor].kind == TokenKind.IDENTIFIER:
+        return NodeIdentifier(tokens[cursor]), cursor + 1
     else:
         return None, cursor
 
