@@ -178,3 +178,35 @@ def test_visitor():
         ("FUNCTION", "END"),
         ("LET", "t", 100),
     ]
+
+
+def gas(instructions):
+    registers = {"r1": "rax"}
+    for inst in instructions:
+        if inst[0] == "LABEL":
+            yield f"{inst[1]}:"
+        elif inst[0] == "MOV":
+            src = f"${inst[1]}"
+            dst = f"%{registers[inst[2]]}"
+            yield f"\tmov {src}, {dst}"
+
+
+def aarch64(instructions):
+    registers = {"r1": "x1"}
+    for inst in instructions:
+        if inst[0] == "LABEL":
+            yield f"{inst[1]}:"
+        elif inst[0] == "MOV":
+            src = f"#{hex(inst[1])}"
+            dst = f"{registers[inst[2]]}"
+            yield f"\tmov {dst}, {src}"
+
+
+def render(lines):
+    return "\n".join(lines) + "\n"
+
+
+def test_ir_code_gen():
+    ir = [("LABEL", "L1"), ("MOV", 5, "r1")]
+    assert list(gas(ir)) == ["L1:", "\tmov $5, %rax"]
+    assert list(aarch64(ir)) == ["L1:", "\tmov x1, #0x5"]
