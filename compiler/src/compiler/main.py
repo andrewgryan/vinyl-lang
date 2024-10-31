@@ -2,6 +2,7 @@ import subprocess
 from compiler.arch import Arch
 from compiler.parser import parse
 from compiler.code_gen import code_gen
+from compiler import ir
 
 
 def main(
@@ -14,9 +15,13 @@ def main(
     # Convert vinyl to assembly
     ast = parse(content)
 
-    content = code_gen(ast, arch)
+    instructions = ir.visit(ast)
+    code = ir.render(ir.gas(instructions))
+    print(code)
+
+    # content = code_gen(ast, arch)
     with open("vinyl.asm", "w") as stream:
-        stream.write(content)
+        stream.write(code)
 
     # Compile
     command = [

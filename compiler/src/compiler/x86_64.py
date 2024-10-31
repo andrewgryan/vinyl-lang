@@ -1,3 +1,6 @@
+from compiler import parser
+
+
 def code_gen_x86_64(program):
     content = """
     .text
@@ -8,7 +11,7 @@ _start:
     # Stack allocate space for variables
     declarations = []
     for statement in program.statements:
-        if isinstance(statement, NodeLet):
+        if isinstance(statement, parser.NodeLet):
             declarations.append(statement.identifier.text)
 
     if len(declarations) > 0:
@@ -20,14 +23,14 @@ _start:
 
     # Exit statement(s)
     for statement in program.statements:
-        if isinstance(statement, NodeExit):
+        if isinstance(statement, parser.NodeExit):
             code = int(statement.status.token.text)
             content += f"""
         mov $60, %rax
         mov ${code}, %rdi
         syscall
 """
-        elif isinstance(statement, NodeLet):
+        elif isinstance(statement, parser.NodeLet):
             index = declarations.index(statement.identifier.text)
             value = int(statement.value.token.text)
             content += f"""
