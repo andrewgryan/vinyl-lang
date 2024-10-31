@@ -18,7 +18,12 @@ def gas(instructions):
         elif (op, arg1) == ("program", "start"):
             yield ".global _start"
             yield ".text"
+            yield ""
             yield "_start:"
+        elif op == "fn":
+            yield f"{arg1}:"
+        elif op == "call":
+            yield f"call {arg1}"
 
 
 def aarch64(instructions):
@@ -37,6 +42,8 @@ def aarch64(instructions):
             yield ".section .text"
             yield ""
             yield "_start:"
+        elif op == "fn":
+            yield f"bl {arg1}"
 
 
 def render(lines):
@@ -83,6 +90,8 @@ def visit_statement(node):
         yield from visit_block(node)
     elif is_return(node):
         yield from visit_return(node)
+    elif is_call(node):
+        yield from visit_call(node)
     else:
         raise Exception(node)
 
@@ -108,6 +117,7 @@ def visit_let(node):
 
 
 def visit_function(node):
+    yield ("fn", node.identifier.token.text, None, None)
     yield from visit_statements(node.body.statements)
 
 
@@ -126,6 +136,10 @@ def visit_statements(statements):
 
 def visit_return(node):
     yield ("return", visit_expression(node.expression), None, None)
+
+
+def visit_call(node):
+    yield ("call", node.identifier.token.text, None, None)
 
 
 def visit(ast):
@@ -173,3 +187,7 @@ def is_block(node):
 
 def is_return(node):
     return isinstance(node, parser.NodeReturn)
+
+
+def is_call(node):
+    return isinstance(node, parser.NodeCall)

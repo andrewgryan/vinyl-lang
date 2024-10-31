@@ -20,10 +20,13 @@ def test_visitor_main_program():
         fn main() {
             return 42;
         }
+        main();
     """)
     assert list(ir.visit(ast)) == [
         ("program", "start", None, None),
+        ("fn", "main", None, None),
         ("return", 42, None, None),
+        ("call", "main", None, None),
         ("program", "end", None, None),
     ]
 

@@ -1,2 +1,8 @@
 # Vinyl lang
-exit(7);
+
+fn main() {
+	exit(7);
+}
+
+
+main();
