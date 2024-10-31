@@ -5,8 +5,15 @@ from compiler import parser
 
 
 def gas(instructions):
+    # TODO: Re-order instructions based on scope
+    yield ".global _start"
+    yield ".text"
+    yield ""
+    scope = "global"
     for (op, arg1, arg2, result) in instructions:
-        if op == "=":
+        if (op, arg1) == ("program", "start"):
+            yield "_start:"
+        elif op == "=":
             yield f"mov ${arg2}, -0x8(%rbp)"
         elif op == "exit":
             yield f"mov $60, %rax"
@@ -15,13 +22,10 @@ def gas(instructions):
         elif op == "return":
             yield f"mov ${arg1}, %rax"
             yield f"ret"
-        elif (op, arg1) == ("program", "start"):
-            yield ".global _start"
-            yield ".text"
-            yield ""
-            yield "_start:"
-        elif op == "fn":
+        elif (op, arg1) == ("fn", "start"):
             yield f"{arg1}:"
+        elif (op, arg1) == ("fn", "end"):
+            continue
         elif op == "call":
             yield f"call {arg1}"
 
@@ -117,8 +121,9 @@ def visit_let(node):
 
 
 def visit_function(node):
-    yield ("fn", node.identifier.token.text, None, None)
+    yield ("fn", "start", node.identifier.token.text, None)
     yield from visit_statements(node.body.statements)
+    yield ("fn", "end", node.identifier.token.text, None)
 
 
 def visit_block(node):
