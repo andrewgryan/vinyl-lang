@@ -3,31 +3,37 @@ import pytest
 
 
 def test_visitor():
-    ast = parser.parse("""
+    ast = parser.parse(
+        """
         let x = 3;
         exit(0);
-    """)
+    """
+    )
     assert list(ir.visit(ast)) == [
-        ("program", "start", None, None),
+        ("global", "start", None, None),
+        ("section", "text", None, None),
+        ("label", "_start", None, None),
         ("=", "x", 3, None),
         ("exit", 0, None, None),
-        ("program", "end", None, None),
     ]
 
 
 def test_visitor_main_program():
-    ast = parser.parse("""
+    ast = parser.parse(
+        """
         fn main() {
             return 42;
         }
         main();
-    """)
+    """
+    )
     assert list(ir.visit(ast)) == [
-        ("program", "start", None, None),
+        ("global", "start", None, None),
+        ("section", "text", None, None),
         ("fn", "main", None, None),
         ("return", 42, None, None),
+        ("label", "_start", None, None),
         ("call", "main", None, None),
-        ("program", "end", None, None),
     ]
 
 
@@ -45,6 +51,7 @@ def test_ir_code_gen():
         "mov x0, #0x0",
         "svc 0",
     ]
+
 
 def test_ir_return():
     instructions = [("return", 42, None, None)]

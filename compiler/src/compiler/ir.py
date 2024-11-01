@@ -1,18 +1,19 @@
 """
 Intermediate representation
 """
+
 from compiler import parser
 
 
 def gas(instructions):
     # TODO: Re-order instructions based on scope
-    yield ".global _start"
-    yield ".text"
-    yield ""
-    scope = "global"
-    for (op, arg1, arg2, result) in instructions:
-        if (op, arg1) == ("program", "start"):
-            yield "_start:"
+    for op, arg1, arg2, result in instructions:
+        if (op, arg1) == ("global", "start"):
+            yield ".global _start"
+        elif (op, arg1) == ("section", "text"):
+            yield ".text"
+        elif op == "label":
+            yield f"{arg1}:"
         elif op == "=":
             yield f"mov ${arg2}, -0x8(%rbp)"
         elif op == "exit":
@@ -22,16 +23,14 @@ def gas(instructions):
         elif op == "return":
             yield f"mov ${arg1}, %rax"
             yield f"ret"
-        elif (op, arg1) == ("fn", "start"):
+        elif op == "fn":
             yield f"{arg1}:"
-        elif (op, arg1) == ("fn", "end"):
-            continue
         elif op == "call":
             yield f"call {arg1}"
 
 
 def aarch64(instructions):
-    for (op, arg1, arg2, result) in instructions:
+    for op, arg1, arg2, result in instructions:
         if op == "=":
             yield f"mov [sp, #0x8], #{hex(arg2)}"
         elif op == "exit":
@@ -101,9 +100,7 @@ def visit_statement(node):
 
 
 def visit_exit(node):
-    return [
-        ("exit", visit_expression(node.status), None, None)
-    ]
+    return [("exit", visit_expression(node.status), None, None)]
 
 
 def visit_print(node):
@@ -116,14 +113,13 @@ def visit_let(node):
         "=",
         visit_identifier(node.identifier),
         visit_expression(node.value),
-        None
+        None,
     )
 
 
 def visit_function(node):
-    yield ("fn", "start", node.identifier.token.text, None)
+    yield ("fn", node.identifier.token.text, None, None)
     yield from visit_statements(node.body.statements)
-    yield ("fn", "end", node.identifier.token.text, None)
 
 
 def visit_block(node):
@@ -140,7 +136,12 @@ def visit_statements(statements):
 
 
 def visit_return(node):
-    yield ("return", visit_expression(node.expression), None, None)
+    yield (
+        "return",
+        visit_expression(node.expression),
+        None,
+        None,
+    )
 
 
 def visit_call(node):
@@ -148,10 +149,20 @@ def visit_call(node):
 
 
 def visit(ast):
+    yield ("global", "start", None, None)
+    yield ("section", "text", None, None)
     if is_program(ast):
-        yield ("program", "start", None, None)
-        yield from visit_statements(ast.statements)
-        yield ("program", "end", None, None)
+        yield from visit_statements(
+            statement
+            for statement in ast.statements
+            if is_function(statement)
+        )
+        yield ("label", "_start", None, None)
+        yield from visit_statements(
+            statement
+            for statement in ast.statements
+            if not is_function(statement)
+        )
 
 
 def is_program(node):

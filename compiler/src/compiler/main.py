@@ -2,7 +2,7 @@ import subprocess
 from compiler.arch import Arch
 from compiler.parser import parse
 from compiler.code_gen import code_gen
-from compiler import ir
+from compiler import analyser, ir
 
 
 def main(
@@ -14,6 +14,8 @@ def main(
 
     # Convert vinyl to assembly
     ast = parse(content)
+
+    ast = analyser.analyse(ast)
 
     instructions = ir.visit(ast)
     code = ir.render(ir.gas(instructions))
