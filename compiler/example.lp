@@ -1,7 +1,11 @@
 # Vinyl lang
 
 fn main() {
-	exit(7);
+	foo();
+}
+
+fn foo() {
+	exit(42);
 }
 
 
