@@ -9,6 +9,67 @@ from compiler.parser import (
 from compiler import parser, x86_64
 
 
+def gas(instructions):
+    return render(gas_lines(instructions))
+
+
+def gas_lines(instructions):
+    for op, arg1, arg2, result in instructions:
+        if (op, arg1) == ("global", "start"):
+            yield ".global _start"
+        elif (op, arg1) == ("section", "text"):
+            yield ".text"
+        elif op == "label":
+            yield f"{arg1}:"
+        elif op == "=":
+            yield f"mov ${arg2}, -0x8(%rbp)"
+        elif op == "exit":
+            yield f"mov $60, %rax"
+            yield f"mov ${arg1}, %rdi"
+            yield f"syscall"
+        elif op == "return":
+            yield f"mov ${arg1}, %rax"
+            yield f"ret"
+        elif op == "call":
+            yield f"call {arg1}"
+        elif op == "ret":
+            yield f"ret"
+
+
+def aarch64(instructions):
+    return render(aarch64_lines(instructions))
+
+
+def aarch64_lines(instructions):
+    for op, arg1, arg2, result in instructions:
+        if op == "=":
+            yield f"mov [sp, #0x8], #{hex(arg2)}"
+        elif op == "exit":
+            yield f"mov x8, #0x5d"
+            yield f"mov x0, #{hex(arg1)}"
+            yield f"svc 0"
+        elif op == "return":
+            yield f"mov x0, #{hex(arg1)}"
+            yield f"ret"
+        elif (op, arg1) == ("global", "start"):
+            yield ".global _start"
+        elif (op, arg1) == ("section", "text"):
+            yield ".section .text"
+        elif op == "label":
+            yield f"{arg1}:"
+        elif op == "call":
+            yield f"bl {arg1}"
+        elif op == "ret":
+            yield f"ret"
+
+
+def render(lines):
+    return "\n".join(lines) + "\n"
+
+
+# DEPRECATE
+
+
 def code_gen(program, arch):
     if arch == Arch.aarch64:
         return code_gen_aaarch64(program)

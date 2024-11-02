@@ -1,12 +1,11 @@
 import subprocess
 from compiler.arch import Arch
 from compiler.parser import parse
-from compiler.code_gen import code_gen
-from compiler import analyser, ir
+from compiler import analyser, ir, code_gen
 
 
 def main(
-    src: str, arch: Arch = Arch.aarch64, gcc_version: int = 11
+    src: str, arch: Arch = Arch.aarch64, gcc_version: int = 11, dry_run: bool = False
 ):
     print(f"compiling: {src}")
     with open(src, "r") as stream:
@@ -18,8 +17,14 @@ def main(
     ast = analyser.analyse(ast)
 
     instructions = ir.visit(ast)
-    code = ir.render(ir.gas(instructions))
-    print(code)
+    if arch == Arch.aarch64:
+        code = code_gen.aarch64(instructions)
+    else:
+        code = code_gen.gas(instructions)
+
+    if dry_run:
+        print(code)
+        return
 
     # content = code_gen(ast, arch)
     with open("vinyl.asm", "w") as stream:

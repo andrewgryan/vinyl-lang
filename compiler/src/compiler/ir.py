@@ -5,54 +5,6 @@ Intermediate representation
 from compiler import parser
 
 
-def gas(instructions):
-    # TODO: Re-order instructions based on scope
-    for op, arg1, arg2, result in instructions:
-        if (op, arg1) == ("global", "start"):
-            yield ".global _start"
-        elif (op, arg1) == ("section", "text"):
-            yield ".text"
-        elif op == "label":
-            yield f"{arg1}:"
-        elif op == "=":
-            yield f"mov ${arg2}, -0x8(%rbp)"
-        elif op == "exit":
-            yield f"mov $60, %rax"
-            yield f"mov ${arg1}, %rdi"
-            yield f"syscall"
-        elif op == "return":
-            yield f"mov ${arg1}, %rax"
-            yield f"ret"
-        elif op == "fn":
-            yield f"{arg1}:"
-        elif op == "call":
-            yield f"call {arg1}"
-
-
-def aarch64(instructions):
-    for op, arg1, arg2, result in instructions:
-        if op == "=":
-            yield f"mov [sp, #0x8], #{hex(arg2)}"
-        elif op == "exit":
-            yield f"mov x8, #0x5d"
-            yield f"mov x0, #{hex(arg1)}"
-            yield f"svc 0"
-        elif op == "return":
-            yield f"mov x0, #{hex(arg1)}"
-            yield f"ret"
-        elif (op, arg1) == ("program", "start"):
-            yield ".global _start"
-            yield ".section .text"
-            yield ""
-            yield "_start:"
-        elif op == "fn":
-            yield f"bl {arg1}"
-
-
-def render(lines):
-    return "\n".join(lines) + "\n"
-
-
 def visit_int(node):
     return int(node.token.text)
 
@@ -118,8 +70,9 @@ def visit_let(node):
 
 
 def visit_function(node):
-    yield ("fn", node.identifier.token.text, None, None)
+    yield ("label", node.identifier.token.text, None, None)
     yield from visit_statements(node.body.statements)
+    yield ("ret", None, None, None)
 
 
 def visit_block(node):
