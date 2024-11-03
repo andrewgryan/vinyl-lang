@@ -33,6 +33,12 @@ def gas_lines(instructions):
             yield f"call {arg1}"
         elif op == "ret":
             yield f"ret"
+        elif op == "store_parameter":
+            reg = {
+                1: "rcx",
+                2: "rdx"
+            }[arg1]
+            yield f"mov ${arg2}, %{reg}"
 
 
 def aarch64(instructions):

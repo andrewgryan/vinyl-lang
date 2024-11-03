@@ -28,15 +28,15 @@ import pytest
             ],
         ),
         pytest.param(
-            ["foo(7);"],
+            ["foo(7, 42);"],
             [
                 ("global", "start", None, None),
                 ("section", "text", None, None),
                 ("label", "_start", None, None),
-                ("store", "parameter", 1, 7),
+                ("store_parameter", 1, 7, None),
+                ("store_parameter", 2, 42, None),
                 ("call", "foo", None, None),
             ],
-            marks=pytest.mark.skip("implementing parser"),
         )
     ],
 )

@@ -52,7 +52,9 @@ def visit_statement(node):
 
 
 def visit_exit(node):
-    return [("exit", visit_expression(node.status), None, None)]
+    status = visit_expression(node.status)
+    assert isinstance(status, int)
+    return [("exit", status, None, None)]
 
 
 def visit_print(node):
@@ -98,6 +100,8 @@ def visit_return(node):
 
 
 def visit_call(node):
+    for i, value in enumerate(node.values, 1):
+        yield ("store_parameter", i, visit_expression(value), None)
     yield ("call", node.identifier.token.text, None, None)
 
 

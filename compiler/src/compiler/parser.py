@@ -65,6 +65,7 @@ class NodeLet:
 
 
 NodeStatement = NodeLet | NodeExit
+NodeExpression = NodeInt | NodeIdentifier | NodeBinOp
 
 
 @dataclass
@@ -87,7 +88,7 @@ class NodeFunction:
 @dataclass
 class NodeCall:
     identifier: NodeIdentifier
-    parameters: list[NodeIdentifier]
+    values: list[NodeExpression]
 
 
 @dataclass
@@ -268,23 +269,49 @@ def parse_print(tokens, cursor):
 
 def parse_call(tokens, cursor):
     if peek(tokens, cursor).kind == TokenKind.IDENTIFIER:
+        # Function name
         identifier, cursor = consume(tokens, cursor)
 
+        # Left parenthesis
         token, cursor = consume(tokens, cursor)
         if token.kind != TokenKind.LEFT_PAREN:
             return False, cursor
 
+        # Call values
+        values, cursor = parse_call_values(tokens, cursor)
+
+        # Right parenthesis
         token, cursor = consume(tokens, cursor)
         if token.kind != TokenKind.RIGHT_PAREN:
             return False, cursor
 
+        # Semi-colon
         token, cursor = consume(tokens, cursor)
         if token.kind != TokenKind.SEMICOLON:
             return False, cursor
 
-        return NodeCall(NodeIdentifier(identifier)), cursor
+        return NodeCall(NodeIdentifier(identifier), values), cursor
     else:
         return False, cursor
+
+
+def parse_call_values(tokens, cursor):
+    values = []
+    while cursor < len(tokens):
+        # Expression list
+        expression, cursor = parse_expression(tokens, cursor)
+        if expression:
+            values.append(expression)
+        else:
+            break
+
+        # Comma separator
+        if peek(tokens, cursor).kind == TokenKind.COMMA:
+            _, cursor = consume(tokens, cursor)
+        else:
+            break
+
+    return values, cursor
 
 
 def parse_return(tokens, cursor):

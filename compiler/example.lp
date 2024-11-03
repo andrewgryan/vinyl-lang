@@ -1,8 +1,8 @@
 # Vinyl lang
 
-fn foo() {
-	return 38;
+fn foo(x, y) {
+    return x + y;
 }
 
-let status = foo();
+let status = foo(2, 2);
 exit(status);

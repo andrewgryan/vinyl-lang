@@ -114,7 +114,8 @@ from compiler.parser import (
             "foo();",
             [
                 parser.NodeCall(
-                    NodeIdentifier(Token.identifier("foo"))
+                    NodeIdentifier(Token.identifier("foo")),
+                    []
                 )
             ],
         ),
@@ -122,7 +123,8 @@ from compiler.parser import (
             "bar(99);",
             [
                 parser.NodeCall(
-                    NodeIdentifier(Token.identifier("bar"))
+                    NodeIdentifier(Token.identifier("bar")),
+                    [parser.NodeInt(Token.int("99"))]
                 )
             ],
         ),
