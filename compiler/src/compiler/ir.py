@@ -32,7 +32,7 @@ def visit_binop(binop):
         return lhs * rhs
 
 
-def visit_statement(node):
+def visit_statement(node, symbol_table=None):
     if is_exit(node):
         yield from visit_exit(node)
     elif is_let(node):
@@ -44,7 +44,7 @@ def visit_statement(node):
     elif is_block(node):
         yield from visit_block(node)
     elif is_return(node):
-        yield from visit_return(node)
+        yield from visit_return(node, symbol_table)
     elif is_call(node):
         yield from visit_call(node)
     else:
@@ -72,14 +72,18 @@ def visit_let(node):
 
 
 def visit_function(node):
+    symbol_table = {}
+
     yield ("label", node.identifier.token.text, None, None)
     if len(node.parameters) > 0:
         yield ("prolog", 8 * len(node.parameters), None, None)
-    # TODO: stack assign parameters
+    # Stack assign parameters
     for i, parameter in enumerate(node.parameters, 1):
+        symbol_table[parameter.token.text] = i
         yield ("parameter", i, 8, None)
     # TODO: stack allocate local variables
-    yield from visit_statements(node.body.statements)
+    for statement in node.body.statements:
+        yield from visit_statement(statement, symbol_table)
     if len(node.parameters) > 0:
         yield ("epilog", 8 * len(node.parameters), None, None)
     yield ("ret", None, None, None)
@@ -98,10 +102,12 @@ def visit_statements(statements):
         yield from visit_statement(statement)
 
 
-def visit_return(node):
+def visit_return(node, symbol_table=None):
+    status = visit_expression(node.expression)
+    print(symbol_table, status)
     yield (
         "return",
-        visit_expression(node.expression),
+        status,
         None,
         None,
     )

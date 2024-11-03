@@ -45,6 +45,7 @@ import pytest
                 ("section", "text", None, None),
                 ("label", "foo", None, None),
                 ("prolog", 8, None, None),
+                ("parameter", 1, 8, None),
                 ("return", "x", None, None),
                 ("epilog", 8, None, None),
                 ("ret", None, None, None),
@@ -81,9 +82,9 @@ def test_visitor_main_program():
 def test_ir_code_gen():
     instructions = [("=", "x", 3, None), ("exit", 0, None, None)]
     assert list(code_gen.gas_lines(instructions)) == [
-        "\tmov $3, -0x8(%rbp)",
-        "\tmov $60, %rax",
-        "\tmov $0, %rdi",
+        "\tmov\t$3, -0x8(%rbp)",
+        "\tmov\t$60, %rax",
+        "\tmov\t$0, %rdi",
         "\tsyscall",
     ]
     assert list(code_gen.aarch64_lines(instructions)) == [
@@ -101,7 +102,7 @@ def test_ir_return():
         "ret",
     ]
     assert list(code_gen.gas_lines(instructions)) == [
-        "\tmov $42, %rax",
+        "\tmov\t$42, %rax",
     ]
 
 
@@ -112,16 +113,16 @@ def test_ir_return():
         (
             [("prolog", 8, None, None)],
             [
-                "\tpush %rbp",
-                "\tmov %rsp, %rbp",
-                "\tsub $8, %rsp",
+                "\tpush\t%rbp",
+                "\tmov\t%rsp, %rbp",
+                "\tsub\t$8, %rsp",
             ],
         ),
         (
             [("epilog", 8, None, None)],
             [
-                "\tmov %rbp, %rsp",
-                "\tpop %rbp",
+                "\tmov\t%rbp, %rsp",
+                "\tpop\t%rbp",
             ],
         ),
     ],
