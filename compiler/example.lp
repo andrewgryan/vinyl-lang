@@ -1,7 +1,7 @@
 # Vinyl lang
 
 fn foo(x, y) {
-    return x;
+    return y;
 }
 
 foo(7, 42);

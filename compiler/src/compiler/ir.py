@@ -79,7 +79,7 @@ def visit_function(node):
         yield ("prolog", 8 * len(node.parameters), None, None)
     # Stack assign parameters
     for i, parameter in enumerate(node.parameters, 1):
-        symbol_table[parameter.token.text] = i
+        symbol_table[parameter.token.text] = ("parameter", i, 8)
         yield ("parameter", i, 8, None)
     # TODO: stack allocate local variables
     for statement in node.body.statements:
@@ -103,8 +103,11 @@ def visit_statements(statements):
 
 
 def visit_return(node, symbol_table=None):
-    status = visit_expression(node.expression)
-    print(symbol_table, status)
+    symbol = visit_expression(node.expression)
+    if symbol in symbol_table:
+        status = symbol_table[symbol]
+    else:
+        status = symbol
     yield (
         "return",
         status,

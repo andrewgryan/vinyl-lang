@@ -36,7 +36,12 @@ def gas_lines(instructions):
             yield f"\tmov\t${arg1}, %rdi"
             yield f"\tsyscall"
         elif op == "return":
-            yield f"\tmov\t${arg1}, %rax"
+            if isinstance(arg1, int):
+                addr = f"${arg1}"
+            else:
+                _, index, size = arg1
+                addr = f"-{size*index}(%rbp)"
+            yield f"\tmov\t{addr}, %rax"
         elif op == "call":
             yield f"\tcall\t{arg1}\n"
         elif op == "ret":
