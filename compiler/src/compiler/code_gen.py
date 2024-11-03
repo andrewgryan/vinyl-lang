@@ -14,6 +14,14 @@ def gas(instructions):
 
 
 def gas_lines(instructions):
+    registers = {
+        1: "rdi",
+        2: "rsi",
+        3: "rcx",
+        4: "rdx",
+        5: "r8",
+        6: "r9",
+    }
     for op, arg1, arg2, result in instructions:
         if (op, arg1) == ("global", "start"):
             yield ".global _start"
@@ -34,19 +42,13 @@ def gas_lines(instructions):
         elif op == "ret":
             yield f"\tret\n"
         elif op == "store_parameter":
-            reg = {
-                1: "rdi",
-                2: "rsi",
-                3: "rcx",
-                4: "rdx",
-                5: "r8",
-                6: "r9",
-            }[arg1]
-            yield f"\tmov\t${arg2}, %{reg}"
+            yield f"\tmov\t${arg2}, %{registers[arg1]}"
         elif op == "prolog":
             yield f"\tpush\t%rbp"
             yield f"\tmov\t%rsp, %rbp"
             yield f"\tsub\t${arg1}, %rsp"
+        elif op == "parameter":
+            yield f"\tmov\t%{registers[arg1]}, -{arg1*arg2}(%rbp)"
         elif op == "epilog":
             yield f"\tmov\t%rbp, %rsp"
             yield f"\tpop\t%rbp"

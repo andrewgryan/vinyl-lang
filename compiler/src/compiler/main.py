@@ -39,6 +39,7 @@ def main(
         "vinyl.asm",
         "-o",
         "vinyl.o",
+        "-g"
     ]
     subprocess.check_call(command)
 

@@ -75,6 +75,10 @@ def visit_function(node):
     yield ("label", node.identifier.token.text, None, None)
     if len(node.parameters) > 0:
         yield ("prolog", 8 * len(node.parameters), None, None)
+    # TODO: stack assign parameters
+    for i, parameter in enumerate(node.parameters, 1):
+        yield ("parameter", i, 8, None)
+    # TODO: stack allocate local variables
     yield from visit_statements(node.body.statements)
     if len(node.parameters) > 0:
         yield ("epilog", 8 * len(node.parameters), None, None)
