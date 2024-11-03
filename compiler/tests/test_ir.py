@@ -37,6 +37,16 @@ import pytest
                 ("store_parameter", 2, 42, None),
                 ("call", "foo", None, None),
             ],
+        ),
+        pytest.param(
+            ["fn foo(x) {", "return x;", "}"],
+            [
+                ("global", "start", None, None),
+                ("section", "text", None, None),
+                ("label", "foo", None, None),
+                ("ret", None, None, None),
+                ("label", "_start", None, None),
+            ],
         )
     ],
 )
