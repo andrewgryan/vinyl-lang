@@ -22,23 +22,34 @@ def gas_lines(instructions):
         elif op == "label":
             yield f"{arg1}:"
         elif op == "=":
-            yield f"mov ${arg2}, -0x8(%rbp)"
+            yield f"\tmov\t${arg2}, -0x8(%rbp)"
         elif op == "exit":
-            yield f"mov $60, %rax"
-            yield f"mov ${arg1}, %rdi"
-            yield f"syscall"
+            yield f"\tmov\t$60, %rax"
+            yield f"\tmov\t${arg1}, %rdi"
+            yield f"\tsyscall"
         elif op == "return":
-            yield f"mov ${arg1}, %rax"
+            yield f"\tmov\t${arg1}, %rax"
         elif op == "call":
-            yield f"call {arg1}"
+            yield f"\tcall\t{arg1}\n"
         elif op == "ret":
-            yield f"ret"
+            yield f"\tret\n"
         elif op == "store_parameter":
             reg = {
-                1: "rcx",
-                2: "rdx"
+                1: "rdi",
+                2: "rsi",
+                3: "rcx",
+                4: "rdx",
+                5: "r8",
+                6: "r9",
             }[arg1]
-            yield f"mov ${arg2}, %{reg}"
+            yield f"\tmov\t${arg2}, %{reg}"
+        elif op == "prolog":
+            yield f"\tpush\t%rbp"
+            yield f"\tmov\t%rsp, %rbp"
+            yield f"\tsub\t${arg1}, %rsp"
+        elif op == "epilog":
+            yield f"\tmov\t%rbp, %rsp"
+            yield f"\tpop\t%rbp"
 
 
 def aarch64(instructions):

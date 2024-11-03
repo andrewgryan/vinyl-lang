@@ -178,7 +178,10 @@ def parse_function(tokens, cursor):
 
         # Code block
         block, cursor = parse_block(tokens, cursor)
-        return NodeFunction(identifier, parameters, block), cursor
+        return (
+            NodeFunction(identifier, parameters, block),
+            cursor,
+        )
     else:
         return False, original_cursor
 
@@ -290,7 +293,10 @@ def parse_call(tokens, cursor):
         if token.kind != TokenKind.SEMICOLON:
             return False, cursor
 
-        return NodeCall(NodeIdentifier(identifier), values), cursor
+        return (
+            NodeCall(NodeIdentifier(identifier), values),
+            cursor,
+        )
     else:
         return False, cursor
 

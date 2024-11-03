@@ -73,7 +73,11 @@ def visit_let(node):
 
 def visit_function(node):
     yield ("label", node.identifier.token.text, None, None)
+    if len(node.parameters) > 0:
+        yield ("prolog", 8 * len(node.parameters), None, None)
     yield from visit_statements(node.body.statements)
+    if len(node.parameters) > 0:
+        yield ("epilog", 8 * len(node.parameters), None, None)
     yield ("ret", None, None, None)
 
 
@@ -101,7 +105,12 @@ def visit_return(node):
 
 def visit_call(node):
     for i, value in enumerate(node.values, 1):
-        yield ("store_parameter", i, visit_expression(value), None)
+        yield (
+            "store_parameter",
+            i,
+            visit_expression(value),
+            None,
+        )
     yield ("call", node.identifier.token.text, None, None)
 
 

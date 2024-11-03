@@ -86,8 +86,12 @@ from compiler.parser import (
             "fn bar(y) {}",
             [
                 NodeFunction(
-                    identifier=NodeIdentifier(Token.identifier("bar")),
-                    parameters=[NodeIdentifier(Token.identifier("y"))],
+                    identifier=NodeIdentifier(
+                        Token.identifier("bar")
+                    ),
+                    parameters=[
+                        NodeIdentifier(Token.identifier("y"))
+                    ],
                     body=NodeBlock([]),
                 )
             ],
@@ -96,7 +100,9 @@ from compiler.parser import (
             "fn baz(a, b, c) {}",
             [
                 NodeFunction(
-                    identifier=NodeIdentifier(Token.identifier("baz")),
+                    identifier=NodeIdentifier(
+                        Token.identifier("baz")
+                    ),
                     parameters=[
                         NodeIdentifier(Token.identifier("a")),
                         NodeIdentifier(Token.identifier("b")),
@@ -114,8 +120,7 @@ from compiler.parser import (
             "foo();",
             [
                 parser.NodeCall(
-                    NodeIdentifier(Token.identifier("foo")),
-                    []
+                    NodeIdentifier(Token.identifier("foo")), []
                 )
             ],
         ),
@@ -124,7 +129,7 @@ from compiler.parser import (
             [
                 parser.NodeCall(
                     NodeIdentifier(Token.identifier("bar")),
-                    [parser.NodeInt(Token.int("99"))]
+                    [parser.NodeInt(Token.int("99"))],
                 )
             ],
         ),

@@ -44,10 +44,13 @@ import pytest
                 ("global", "start", None, None),
                 ("section", "text", None, None),
                 ("label", "foo", None, None),
+                ("prolog", 8, None, None),
+                ("return", "x", None, None),
+                ("epilog", 8, None, None),
                 ("ret", None, None, None),
                 ("label", "_start", None, None),
             ],
-        )
+        ),
     ],
 )
 def test_visitor(statements, instructions):
@@ -78,10 +81,10 @@ def test_visitor_main_program():
 def test_ir_code_gen():
     instructions = [("=", "x", 3, None), ("exit", 0, None, None)]
     assert list(code_gen.gas_lines(instructions)) == [
-        "mov $3, -0x8(%rbp)",
-        "mov $60, %rax",
-        "mov $0, %rdi",
-        "syscall",
+        "\tmov $3, -0x8(%rbp)",
+        "\tmov $60, %rax",
+        "\tmov $0, %rdi",
+        "\tsyscall",
     ]
     assert list(code_gen.aarch64_lines(instructions)) == [
         "mov [sp, #0x8], #0x3",
@@ -98,5 +101,30 @@ def test_ir_return():
         "ret",
     ]
     assert list(code_gen.gas_lines(instructions)) == [
-        "mov $42, %rax",
+        "\tmov $42, %rax",
     ]
+
+
+@pytest.mark.parametrize(
+    "instructions,expect",
+    [
+        ([], []),
+        (
+            [("prolog", 8, None, None)],
+            [
+                "\tpush %rbp",
+                "\tmov %rsp, %rbp",
+                "\tsub $8, %rsp",
+            ],
+        ),
+        (
+            [("epilog", 8, None, None)],
+            [
+                "\tmov %rbp, %rsp",
+                "\tpop %rbp",
+            ],
+        ),
+    ],
+)
+def test_gas_lines(instructions, expect):
+    assert list(code_gen.gas_lines(instructions)) == expect
