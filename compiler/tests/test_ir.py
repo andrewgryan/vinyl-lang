@@ -52,6 +52,16 @@ import pytest
                 ("label", "_start", None, None),
             ],
         ),
+        pytest.param(
+            ["let t = foo();"],
+            [
+                ("global", "start", None, None),
+                ("section", "text", None, None),
+                ("label", "_start", None, None),
+                # TODO: Support let statement function calls
+                ("=", "t", [("call", "foo", None, None)], None),
+            ]
+        )
     ],
 )
 def test_visitor(statements, instructions):
