@@ -16,6 +16,8 @@ def visit_expression(node):
         return visit_binop(node)
     elif is_identifier(node):
         return visit_identifier(node)
+    elif is_call(node):
+        return visit_call(node)
     else:
         raise Exception(node)
 

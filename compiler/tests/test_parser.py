@@ -160,6 +160,18 @@ from compiler.parser import (
                 )
             ],
         ),
+        pytest.param(
+            "let t = foo();",
+            [
+                parser.NodeLet(
+                    parser.NodeIdentifier(Token.identifier("t")),
+                    parser.NodeCall(
+                        NodeIdentifier(Token.identifier("foo")),
+                        [],
+                    ),
+                )
+            ],
+        ),
     ],
 )
 def test_parse(content, statements):

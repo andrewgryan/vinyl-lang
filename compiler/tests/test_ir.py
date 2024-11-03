@@ -46,7 +46,7 @@ import pytest
                 ("label", "foo", None, None),
                 ("prolog", 8, None, None),
                 ("parameter", 1, 8, None),
-                ("return", "x", None, None),
+                ("return", ("parameter", 1, 8), None, None),
                 ("epilog", 8, None, None),
                 ("ret", None, None, None),
                 ("label", "_start", None, None),

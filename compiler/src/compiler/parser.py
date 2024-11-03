@@ -288,11 +288,6 @@ def parse_call(tokens, cursor):
         if token.kind != TokenKind.RIGHT_PAREN:
             return False, cursor
 
-        # Semi-colon
-        token, cursor = consume(tokens, cursor)
-        if token.kind != TokenKind.SEMICOLON:
-            return False, cursor
-
         return (
             NodeCall(NodeIdentifier(identifier), values),
             cursor,
@@ -374,6 +369,8 @@ def parse_expression(tokens, cursor):
             return node, next_cursor
         else:
             return NodeInt(tokens[cursor]), cursor + 1
+    elif is_call(tokens, cursor):
+        return parse_call(tokens, cursor)
     elif tokens[cursor].kind == TokenKind.IDENTIFIER:
         node, next_cursor = parse_binary(tokens, cursor)
         if node:
@@ -382,6 +379,12 @@ def parse_expression(tokens, cursor):
             return NodeIdentifier(tokens[cursor]), cursor + 1
     else:
         return None, cursor
+
+
+def is_call(tokens, cursor):
+    return (tokens[cursor].kind == TokenKind.IDENTIFIER) and (
+        tokens[cursor + 1].kind == TokenKind.LEFT_PAREN
+    )
 
 
 def parse_binary(tokens, cursor):
