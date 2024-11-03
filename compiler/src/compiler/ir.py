@@ -17,7 +17,7 @@ def visit_expression(node):
     elif is_identifier(node):
         return visit_identifier(node)
     elif is_call(node):
-        return visit_call(node)
+        return list(visit_call(node))
     else:
         raise Exception(node)
 
