@@ -22,6 +22,7 @@ class TokenKind(Enum):
     FUNCTION = 17
     PRINT = 18
     RETURN = 19
+    COMMA = 20
 
 
 @dataclass
@@ -113,6 +114,7 @@ def lex(content):
         "*": TokenKind.STAR,
         "/": TokenKind.FORWARD_SLASH,
         "^": TokenKind.CARET,
+        ",": TokenKind.COMMA,
     }
     while cursor < len(content):
         if content[cursor] == "#":

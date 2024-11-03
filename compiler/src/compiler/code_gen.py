@@ -29,7 +29,6 @@ def gas_lines(instructions):
             yield f"syscall"
         elif op == "return":
             yield f"mov ${arg1}, %rax"
-            yield f"ret"
         elif op == "call":
             yield f"call {arg1}"
         elif op == "ret":

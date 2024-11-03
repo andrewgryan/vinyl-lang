@@ -77,7 +77,32 @@ from compiler.parser import (
             [
                 NodeFunction(
                     NodeIdentifier(Token.identifier("foo")),
+                    [],
                     NodeBlock([]),
+                )
+            ],
+        ),
+        pytest.param(
+            "fn bar(y) {}",
+            [
+                NodeFunction(
+                    identifier=NodeIdentifier(Token.identifier("bar")),
+                    parameters=[NodeIdentifier(Token.identifier("y"))],
+                    body=NodeBlock([]),
+                )
+            ],
+        ),
+        pytest.param(
+            "fn baz(a, b, c) {}",
+            [
+                NodeFunction(
+                    identifier=NodeIdentifier(Token.identifier("baz")),
+                    parameters=[
+                        NodeIdentifier(Token.identifier("a")),
+                        NodeIdentifier(Token.identifier("b")),
+                        NodeIdentifier(Token.identifier("c")),
+                    ],
+                    body=NodeBlock([]),
                 )
             ],
         ),
@@ -90,6 +115,14 @@ from compiler.parser import (
             [
                 parser.NodeCall(
                     NodeIdentifier(Token.identifier("foo"))
+                )
+            ],
+        ),
+        pytest.param(
+            "bar(99);",
+            [
+                parser.NodeCall(
+                    NodeIdentifier(Token.identifier("bar"))
                 )
             ],
         ),

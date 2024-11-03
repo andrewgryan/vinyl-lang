@@ -80,12 +80,14 @@ class NodeBlock:
 @dataclass
 class NodeFunction:
     identifier: NodeIdentifier
+    parameters: list[NodeIdentifier]
     body: NodeBlock
 
 
 @dataclass
 class NodeCall:
     identifier: NodeIdentifier
+    parameters: list[NodeIdentifier]
 
 
 @dataclass
@@ -153,18 +155,50 @@ def parse_statement(tokens, cursor):
 def parse_function(tokens, cursor):
     original_cursor = cursor
     if peek(tokens, cursor).kind == TokenKind.FUNCTION:
+
+        # Fn keyword
         _, cursor = consume(tokens, cursor)
+
+        # Function name
         identifier, cursor = parse_identifier(tokens, cursor)
+
+        # Left parenthesis
         token, cursor = consume(tokens, cursor)
         if token.kind != TokenKind.LEFT_PAREN:
             return False, original_cursor
+
+        # Parameters
+        parameters, cursor = parse_parameters(tokens, cursor)
+
+        # Right parenthesis
         token, cursor = consume(tokens, cursor)
         if token.kind != TokenKind.RIGHT_PAREN:
             return False, original_cursor
+
+        # Code block
         block, cursor = parse_block(tokens, cursor)
-        return NodeFunction(identifier, block), cursor
+        return NodeFunction(identifier, parameters, block), cursor
     else:
         return False, original_cursor
+
+
+def parse_parameters(tokens, cursor):
+    params = []
+    while cursor < len(tokens):
+        # Identifier list
+        identifier, cursor = parse_identifier(tokens, cursor)
+        if identifier:
+            params.append(identifier)
+        else:
+            break
+
+        # Comma separator
+        if peek(tokens, cursor).kind == TokenKind.COMMA:
+            _, cursor = consume(tokens, cursor)
+        else:
+            break
+
+    return params, cursor
 
 
 def parse_identifier(tokens, cursor):

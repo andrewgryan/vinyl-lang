@@ -5,7 +5,10 @@ from compiler import analyser, ir, code_gen
 
 
 def main(
-    src: str, arch: Arch = Arch.aarch64, gcc_version: int = 11, dry_run: bool = False
+    src: str,
+    arch: Arch = Arch.aarch64,
+    gcc_version: int = 11,
+    dry_run: bool = False,
 ):
     print(f"compiling: {src}")
     with open(src, "r") as stream:
