@@ -55,7 +55,6 @@ def visit_statement(node, symbol_table=None):
 
 def visit_exit(node):
     status = visit_expression(node.status)
-    assert isinstance(status, int)
     return [("exit", status, None, None)]
 
 
@@ -68,7 +67,7 @@ def visit_let(node):
     yield (
         "=",
         visit_identifier(node.identifier),
-        visit_expression(node.value),
+        expr,
         None,
     )
 
@@ -131,17 +130,26 @@ def visit_call(node):
 
 def visit(ast):
     yield ("global", "start", None, None)
-    yield ("section", "text", None, None)
     if is_program(ast):
+        # Global data
+        lets = [statement for statement in ast.statements if is_let(statement)]
+        if len(lets) > 0:
+            yield ("section", "data", None, None)
+            for let in lets:
+                yield ("int", let.identifier.token.text, visit_expression(let.value), None)
+
+        statements = [statement for statement in ast.statements if not is_let(statement)]
+
+        yield ("section", "text", None, None)
         yield from visit_statements(
             statement
-            for statement in ast.statements
+            for statement in statements
             if is_function(statement)
         )
         yield ("label", "_start", None, None)
         yield from visit_statements(
             statement
-            for statement in ast.statements
+            for statement in statements
             if not is_function(statement)
         )
 

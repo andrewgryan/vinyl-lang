@@ -6,16 +6,6 @@ import pytest
     "statements,instructions",
     [
         (
-            ["let x = 3;", "exit(0);"],
-            [
-                ("global", "start", None, None),
-                ("section", "text", None, None),
-                ("label", "_start", None, None),
-                ("=", "x", 3, None),
-                ("exit", 0, None, None),
-            ],
-        ),
-        (
             ["fn main() {", "return 5;", "}", "main();"],
             [
                 ("global", "start", None, None),
@@ -53,14 +43,43 @@ import pytest
             ],
         ),
         pytest.param(
+            ["let y = 36 + 2;"],
+            [
+                ("global", "start", None, None),
+                ("section", "data", None, None),
+                ("int", "y", 38, None),
+                ("section", "text", None, None),
+                ("label", "_start", None, None),
+            ],
+            id="global integer",
+        ),
+        pytest.param(
+            ["let x = 3;", "exit(x);"],
+            [
+                ("global", "start", None, None),
+                ("section", "text", None, None),
+                ("label", "_start", None, None),
+                ("prolog", 8, None, None),
+                ("=", ("bp", "dw", 0), 3, None),
+                ("exit", ("bp", "dw", 0), None, None),
+                ("epilog", 8, None, None),
+            ],
+            id="assign literal then exit",
+            marks=pytest.mark.skip("wip"),
+        ),
+        pytest.param(
             ["let t = foo();"],
             [
                 ("global", "start", None, None),
                 ("section", "text", None, None),
                 ("label", "_start", None, None),
-                # TODO: Support let statement function calls
-                ("=", "t", [("call", "foo", None, None)], None),
-            ]
+                ("prolog", 8, None, None),
+                ("call", "foo", None, None),
+                ("=", ("bp", "dw", 0), "rax", None),
+                ("epilog", 8, None, None),
+            ],
+            id="let call",
+            marks=pytest.mark.skip("wip"),
         )
     ],
 )

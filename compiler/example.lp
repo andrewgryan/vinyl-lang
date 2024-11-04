@@ -1,8 +1,5 @@
 # Vinyl lang
 
-fn foo(x, y) {
-    return y;
-}
+let t = 100;
 
-let t = foo(7, 42);
-exit(0);
+exit(t);

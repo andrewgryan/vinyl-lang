@@ -25,15 +25,21 @@ def gas_lines(instructions):
     for op, arg1, arg2, result in instructions:
         if (op, arg1) == ("global", "start"):
             yield ".global _start"
-        elif (op, arg1) == ("section", "text"):
-            yield ".text"
+        elif op == "section":
+            yield f"\n.{arg1}"
         elif op == "label":
             yield f"{arg1}:"
+        elif op == "int":
+            yield f"{arg1}: .int {hex(arg2)}"
         elif op == "=":
             yield f"\tmov\t${arg2}, -0x8(%rbp)"
         elif op == "exit":
+            if isinstance(arg1, int):
+                addr = f"${arg1}"
+            else:
+                addr = arg1
             yield f"\tmov\t$60, %rax"
-            yield f"\tmov\t${arg1}, %rdi"
+            yield f"\tmov\t{addr}, %rdi"
             yield f"\tsyscall"
         elif op == "return":
             if isinstance(arg1, int):
