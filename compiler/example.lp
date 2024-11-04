@@ -1,5 +1,7 @@
 # Vinyl lang
 
-let t = 100;
+let a = 100;
+let b = 42;
+let c = a + b;
 
-exit(t);
+exit(c);
