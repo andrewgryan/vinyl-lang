@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 memory = namedtuple("memory", "scope dtype")
 register = namedtuple("register", "i")
+parameter = namedtuple("parameter", "i")
 
 
 @dataclass
@@ -16,20 +17,20 @@ class Id:
 
 
 @dataclass
-class Add:
+class BinOp:
     lhs: Int
     rhs: Int
+    op: str
+
+
+@dataclass
+class Add(BinOp):
     op: str = "add"
 
 
 @dataclass
-class Mul:
-    lhs: Int
-    rhs: Int
+class Mul(BinOp):
     op: str = "mul"
-
-
-BinOp = Add | Mul
 
 
 @dataclass
@@ -50,8 +51,8 @@ class Fn:
 
 @dataclass
 class Call:
+    id: Id
     args: list[Id]
-    body: list[Statement]
 
 
 @dataclass
@@ -78,16 +79,36 @@ class Visitor:
     def visit_statement(self, statement):
         if self.is_let(statement):
             return self.visit_let(statement)
-        if self.is_binop(statement):
+        elif self.is_binop(statement):
             return self.visit_value(statement, 0)[0]
+        elif self.is_return(statement):
+            return self.visit_return(statement)
+        elif self.is_call(statement):
+            return self.visit_call(statement)
         else:
             raise Exception(f"Unknown statement: {statement}")
+
+    def visit_call(self, call):
+        instructions = []
+        for i, arg in enumerate(call.args):
+            instrs, addr = self.visit_value(arg, 0)
+            instructions += instrs
+            instructions.append(("mov", parameter(i), addr))
+        return instructions + [
+            ("call", call.id.data)
+        ]
 
     def visit_let(self, let):
         key = let.identifier.data
         self.symbols[key] = memory(self.scope, dtype="int")
         instructions, addr = self.visit_value(let.value, 0)
         return instructions + [("mov", key, addr)]
+
+    def visit_return(self, node):
+        insts, addr = self.visit_value(node.value, 0)
+        return insts + [
+            ("mov", "rax", addr)
+        ]
 
     def visit_value(self, node, index):
         if self.is_int(node):
@@ -136,17 +157,32 @@ class Visitor:
     def is_identifier(node):
         return isinstance(node, Id)
 
+    @staticmethod
+    def is_return(node):
+        return isinstance(node, Return)
 
-ast = AST(
-    [
-        Fn(Id("foo"), [], [Return(Id("x"))]),
-        Let(Id("x"), Int(5)),
-        Let(Id("t"), Call(Id("foo"), [])),
-    ]
-)
+    @staticmethod
+    def is_call(node):
+        return isinstance(node, Call)
 
-visitor = Visitor()
-instructions = visitor.visit(ast)
-print(visitor.symbols)
-for instruction in instructions:
-    print(instruction)
+
+def main():
+
+    ast = AST(
+        [
+            Return(Id("x"))
+            # Fn(Id("foo"), [], [Return(Id("x"))]),
+            # Let(Id("x"), Int(5)),
+            # Let(Id("t"), Call(Id("foo"), [])),
+        ]
+    )
+
+    visitor = Visitor()
+    instructions = visitor.visit(ast)
+    print(visitor.symbols)
+    for instruction in instructions:
+        print(instruction)
+
+
+if __name__ == "__main__":
+    main()
