@@ -43,6 +43,13 @@ Statement = Let
 
 @dataclass
 class Fn:
+    name: Id
+    args: list[Id]
+    body: list[Statement]
+
+
+@dataclass
+class Call:
     args: list[Id]
     body: list[Statement]
 
@@ -132,8 +139,9 @@ class Visitor:
 
 ast = AST(
     [
+        Fn(Id("foo"), [], [Return(Id("x"))]),
         Let(Id("x"), Int(5)),
-        Let(Id("t"), Fn([], [Return(Id("x"))])),
+        Let(Id("t"), Call(Id("foo"), [])),
     ]
 )
 
