@@ -80,7 +80,7 @@ import pytest
             ],
             id="let call",
             marks=pytest.mark.skip("wip"),
-        )
+        ),
     ],
 )
 def test_visitor(statements, instructions):

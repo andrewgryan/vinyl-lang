@@ -132,13 +132,26 @@ def visit(ast):
     yield ("global", "start", None, None)
     if is_program(ast):
         # Global data
-        lets = [statement for statement in ast.statements if is_let(statement)]
+        lets = [
+            statement
+            for statement in ast.statements
+            if is_let(statement)
+        ]
         if len(lets) > 0:
             yield ("section", "data", None, None)
             for let in lets:
-                yield ("int", let.identifier.token.text, visit_expression(let.value), None)
+                yield (
+                    "int",
+                    let.identifier.token.text,
+                    visit_expression(let.value),
+                    None,
+                )
 
-        statements = [statement for statement in ast.statements if not is_let(statement)]
+        statements = [
+            statement
+            for statement in ast.statements
+            if not is_let(statement)
+        ]
 
         yield ("section", "text", None, None)
         yield from visit_statements(

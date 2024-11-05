@@ -3,9 +3,11 @@ from dataclasses import dataclass
 
 memory = namedtuple("memory", "scope dtype")
 
+
 @dataclass
 class Register:
     index: int
+
 
 @dataclass
 class Int:
@@ -21,6 +23,17 @@ class Id:
 class Add:
     lhs: Int
     rhs: Int
+    op: str = "add"
+
+
+@dataclass
+class Mul:
+    lhs: Int
+    rhs: Int
+    op: str = "mul"
+
+
+BinOp = Add | Mul
 
 
 @dataclass
@@ -51,6 +64,8 @@ class Visitor:
     def visit_statement(self, statement):
         if self.is_let(statement):
             return self.visit_let(statement)
+        if self.is_binop(statement):
+            return self.visit_value(statement, 0)[0]
         else:
             raise Exception(f"Unknown statement: {statement}")
 
@@ -64,19 +79,36 @@ class Visitor:
         if self.is_int(node):
             addr = Register(index)
             return [("mov", node.data, addr)], addr
-        elif self.is_add(node):
-            instructions, addr = self.visit_value(node.lhs, index) 
-            index = addr.index
-            return instructions + [
-                ("mov", node.rhs.data, Register(index + 1)),
-                ("add", Register(index), Register(index + 1), Register(index + 2)),
-            ], Register(index + 2)
+        if self.is_identifier(node):
+            addr = Register(index)
+            return [("mov", node.data, addr)], addr
+        elif self.is_binop(node):
+            lhs_instructions, addr = self.visit_value(
+                node.lhs, index
+            )
+            lhs_index = addr.index
+            rhs_instructions, addr = self.visit_value(
+                node.rhs, lhs_index + 1
+            )
+            rhs_index = addr.index
+            return lhs_instructions + rhs_instructions + [
+                (
+                    node.op,
+                    Register(lhs_index),
+                    Register(rhs_index),
+                    Register(rhs_index + 1),
+                ),
+            ], Register(rhs_index + 1)
         else:
             raise Exception(f"Unknown value: {node}")
 
     @staticmethod
     def is_let(node):
         return isinstance(node, Let)
+
+    @staticmethod
+    def is_binop(node):
+        return isinstance(node, BinOp)
 
     @staticmethod
     def is_add(node):
@@ -86,10 +118,24 @@ class Visitor:
     def is_int(node):
         return isinstance(node, Int)
 
+    @staticmethod
+    def is_identifier(node):
+        return isinstance(node, Id)
 
-ast = AST([
-  Let(Id("b"), Add(Add(Int(12), Int(2)), Int(5))),
-])
+
+ast = AST(
+    [
+        Let(
+            Id("x"),
+            Int(5)
+        ),
+        Let(
+            Id("y"),
+            Int(6)
+        ),
+        Add(Id("x"), Id("y"))
+    ]
+)
 
 visitor = Visitor()
 instructions = visitor.visit(ast)
