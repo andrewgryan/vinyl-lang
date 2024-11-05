@@ -64,8 +64,14 @@ class Visitor:
         if self.is_int(node):
             addr = Register(index)
             return [("mov", node.data, addr)], addr
+        elif self.is_add(node):
+            return [
+                ("mov", node.lhs.data, Register(index)),
+                ("mov", node.rhs.data, Register(index + 1)),
+                ("add", Register(index), Register(index + 1), Register(index + 2)),
+            ], Register(index + 2)
         else:
-            raise Exception(f"Unknown value: {value}")
+            raise Exception(f"Unknown value: {node}")
 
     @staticmethod
     def is_let(node):
@@ -81,9 +87,7 @@ class Visitor:
 
 
 ast = AST([
-  # Let(Id("x"), Add(Add(Int(5), Int(6)), Int(7))),
-  Let(Id("y"), Int(12)),
-  Let(Id("z"), Int(24))
+  Let(Id("b"), Add(Int(12), Int(5))),
 ])
 
 visitor = Visitor()
