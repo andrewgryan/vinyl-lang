@@ -2,11 +2,7 @@ from collections import namedtuple
 from dataclasses import dataclass
 
 memory = namedtuple("memory", "scope dtype")
-
-
-@dataclass
-class Register:
-    index: int
+register = namedtuple("register", "i")
 
 
 @dataclass
@@ -46,6 +42,17 @@ Statement = Let
 
 
 @dataclass
+class Fn:
+    args: list[Id]
+    body: list[Statement]
+
+
+@dataclass
+class Return:
+    value: Int
+
+
+@dataclass
 class AST:
     statements: list[Statement]
 
@@ -73,32 +80,32 @@ class Visitor:
         key = let.identifier.data
         self.symbols[key] = memory(self.scope, dtype="int")
         instructions, addr = self.visit_value(let.value, 0)
-        return instructions + [("=", key, addr)]
+        return instructions + [("mov", key, addr)]
 
     def visit_value(self, node, index):
         if self.is_int(node):
-            addr = Register(index)
-            return [("mov", node.data, addr)], addr
+            addr = register(index)
+            return [("mov", addr, node.data)], addr
         if self.is_identifier(node):
-            addr = Register(index)
-            return [("mov", node.data, addr)], addr
+            addr = register(index)
+            return [("mov", addr, node.data)], addr
         elif self.is_binop(node):
             lhs_instructions, addr = self.visit_value(
                 node.lhs, index
             )
-            lhs_index = addr.index
+            lhs_index = addr.i
             rhs_instructions, addr = self.visit_value(
                 node.rhs, lhs_index + 1
             )
-            rhs_index = addr.index
+            rhs_index = addr.i
             return lhs_instructions + rhs_instructions + [
                 (
                     node.op,
-                    Register(lhs_index),
-                    Register(rhs_index),
-                    Register(rhs_index + 1),
+                    register(lhs_index),
+                    register(rhs_index),
+                    register(rhs_index + 1),
                 ),
-            ], Register(rhs_index + 1)
+            ], register(rhs_index + 1)
         else:
             raise Exception(f"Unknown value: {node}")
 
@@ -125,15 +132,8 @@ class Visitor:
 
 ast = AST(
     [
-        Let(
-            Id("x"),
-            Int(5)
-        ),
-        Let(
-            Id("y"),
-            Int(6)
-        ),
-        Add(Id("x"), Id("y"))
+        Let(Id("x"), Int(5)),
+        Let(Id("t"), Fn([], [Return(Id("x"))])),
     ]
 )
 
