@@ -65,8 +65,9 @@ class Visitor:
             addr = Register(index)
             return [("mov", node.data, addr)], addr
         elif self.is_add(node):
-            return [
-                ("mov", node.lhs.data, Register(index)),
+            instructions, addr = self.visit_value(node.lhs, index) 
+            index = addr.index
+            return instructions + [
                 ("mov", node.rhs.data, Register(index + 1)),
                 ("add", Register(index), Register(index + 1), Register(index + 2)),
             ], Register(index + 2)
@@ -87,7 +88,7 @@ class Visitor:
 
 
 ast = AST([
-  Let(Id("b"), Add(Int(12), Int(5))),
+  Let(Id("b"), Add(Add(Int(12), Int(2)), Int(5))),
 ])
 
 visitor = Visitor()
