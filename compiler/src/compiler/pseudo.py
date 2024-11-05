@@ -44,7 +44,7 @@ Statement = Let
 
 @dataclass
 class Fn:
-    name: Id
+    id: Id
     args: list[Id]
     body: list[Statement]
 
@@ -85,8 +85,20 @@ class Visitor:
             return self.visit_return(statement)
         elif self.is_call(statement):
             return self.visit_call(statement)
+        elif self.is_fn(statement):
+            return self.visit_fn(statement)
         else:
             raise Exception(f"Unknown statement: {statement}")
+
+    def visit_fn(self, fn):
+        return [
+            ("label", fn.id.data)
+            # TODO: Function scoped variables
+            #       Parameter registers
+            #       Stack allocation
+            #       Prolog
+            #       Epilog
+        ]
 
     def visit_call(self, call):
         instructions = []
@@ -94,9 +106,7 @@ class Visitor:
             instrs, addr = self.visit_value(arg, 0)
             instructions += instrs
             instructions.append(("mov", parameter(i), addr))
-        return instructions + [
-            ("call", call.id.data)
-        ]
+        return instructions + [("call", call.id.data)]
 
     def visit_let(self, let):
         key = let.identifier.data
@@ -106,9 +116,7 @@ class Visitor:
 
     def visit_return(self, node):
         insts, addr = self.visit_value(node.value, 0)
-        return insts + [
-            ("mov", "rax", addr)
-        ]
+        return insts + [("mov", "rax", addr)]
 
     def visit_value(self, node, index):
         if self.is_int(node):
@@ -164,6 +172,10 @@ class Visitor:
     @staticmethod
     def is_call(node):
         return isinstance(node, Call)
+
+    @staticmethod
+    def is_fn(node):
+        return isinstance(node, Fn)
 
 
 def main():
