@@ -1,3 +1,5 @@
+import pytest
+from pytest import param
 from compiler import pseudo
 from compiler.pseudo import (
     Add,
@@ -35,9 +37,29 @@ def test_pseudo_code_call():
     assert actual == expected
 
 
-def test_pseudo_code_fn():
-    ast = AST([Fn(Id("bar"), [], [])])
+@pytest.mark.parametrize(
+    "program,expected",
+    [
+        param(
+            AST([Fn(Id("bar"), [], [])]),
+            [("label", "bar")],
+            id="fn-empty-body",
+        ),
+        param(
+            AST([Fn(Id("bar"), [Id("x")], [Return(Id("x"))])]),
+            [
+                ("label", "bar"),
+                ("prolog", 8),
+                ("mov", base_pointer(-8), parameter(1))
+                ("mov", "return_register", base_pointer(-8))
+                ("epilog", 8),
+                ("ret")
+            ],
+            id="fn-return-x",
+        ),
+    ],
+)
+def test_pseudo_code_fn(program, expected):
     visitor = pseudo.Visitor()
-    actual = visitor.visit(ast)
-    expected = [("label", "bar")]
+    actual = visitor.visit(program)
     assert actual == expected
