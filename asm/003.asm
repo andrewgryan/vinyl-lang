@@ -3,8 +3,8 @@
 msg: .ascii "Hello, World!\n"
 msg_len = (. - msg)
 
-buf: .space 100, 0
-buf_len = 100
+buf: .space 1024, 0
+buf_len = 1024
 
 in_name: .asciz "in.txt"
 in_name_len = (. - in_name)
