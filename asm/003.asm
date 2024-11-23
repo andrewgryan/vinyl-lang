@@ -23,6 +23,7 @@ O_RDWR = 0x2
 
 fd_in: .quad 0
 fd_out: .quad 0
+bytes: .quad 0
 
         .text
 
@@ -59,6 +60,14 @@ _start:
         mov        $buf, %rsi
         mov        $buf_len, %rdx
         syscall
+        mov        %rax, (bytes)
+
+        # System write
+        mov        $SYS_WRITE, %rax
+        mov        (fd_out), %rdi
+        mov        $buf, %rsi
+        mov        (bytes), %rdx
+        syscall
 
         # Clear buffer
         call       clear
@@ -69,12 +78,13 @@ _start:
         mov        $buf, %rsi
         mov        $buf_len, %rdx
         syscall
+        mov        %rax, (bytes)
 
         # System write
         mov        $SYS_WRITE, %rax
         mov        (fd_out), %rdi
         mov        $buf, %rsi
-        mov        $buf_len, %rdx
+        mov        (bytes), %rdx
         syscall
 
         # Close input file
