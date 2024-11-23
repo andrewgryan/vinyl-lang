@@ -17,6 +17,8 @@ O_RDONLY = 0x0
 O_WRONLY = 0x1
 O_RDWR = 0x2
 
+fd_in: .quad 0
+fd_out: .quad 0
 
         .text
 _start:
@@ -26,13 +28,11 @@ _start:
         mov        $(O_WRONLY | O_CREAT), %rsi
         mov        $0666, %rdx
         syscall
-
-        # Save file handle
-        mov        %rax, %r9
+        mov        %rax, (fd_out)
 
         # System write
         mov        $SYS_WRITE, %rax
-        mov        %r9, %rdi
+        mov        (fd_out), %rdi
         mov        $msg, %rsi
         mov        $msg_len, %rdx
         syscall
@@ -42,21 +42,19 @@ _start:
         mov        $in_name, %rdi
         mov        $O_RDONLY, %rsi
         syscall
-
-        # Save input file handle
-        mov        %rax, %r8
+        mov        %rax, (fd_in)
 
         # Close input file
         mov        $SYS_CLOSE, %rax
-        mov        %r8, %rdi
+        mov        (fd_in), %rdi
         syscall
 
         # Close output file
         mov        $SYS_CLOSE, %rax
-        mov        %r9, %rdi
+        mov        (fd_out), %rdi
         syscall
 
         # System exit
         mov        $60, %rax
-        mov        %r9, %rdi
+        mov        $0, %rdi
         syscall
