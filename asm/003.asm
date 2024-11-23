@@ -54,6 +54,7 @@ _start:
         syscall
         mov        %rax, (fd_in)
 
+.R1:
         # Read
         mov        $SYS_READ, %rax
         mov        (fd_in), %rdi
@@ -69,20 +70,8 @@ _start:
         mov        (bytes), %rdx
         syscall
 
-        # Read
-        mov        $SYS_READ, %rax
-        mov        (fd_in), %rdi
-        mov        $buf, %rsi
-        mov        $buf_len, %rdx
-        syscall
-        mov        %rax, (bytes)
-
-        # System write
-        mov        $SYS_WRITE, %rax
-        mov        (fd_out), %rdi
-        mov        $buf, %rsi
-        mov        (bytes), %rdx
-        syscall
+        cmp        $0, (bytes)
+        jg         .R1
 
         # Close input file
         mov        $SYS_CLOSE, %rax
