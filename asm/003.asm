@@ -69,9 +69,6 @@ _start:
         mov        (bytes), %rdx
         syscall
 
-        # Clear buffer
-        call       clear
-
         # Read
         mov        $SYS_READ, %rax
         mov        (fd_in), %rdi
