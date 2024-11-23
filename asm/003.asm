@@ -3,11 +3,15 @@
 msg: .ascii "Hello, World!\n"
 msg_len = (. - msg)
 
-in_name: .asciz "data.txt"
+buf: .space 100, 0
+buf_len = 100
+
+in_name: .asciz "in.txt"
 in_name_len = (. - in_name)
 out_name: .asciz "out.txt"
 out_name_len = (. - out_name)
 
+SYS_READ = 0
 SYS_WRITE = 1
 SYS_OPEN = 2
 SYS_CLOSE = 3
@@ -30,19 +34,26 @@ _start:
         syscall
         mov        %rax, (fd_out)
 
-        # System write
-        mov        $SYS_WRITE, %rax
-        mov        (fd_out), %rdi
-        mov        $msg, %rsi
-        mov        $msg_len, %rdx
-        syscall
-
         # Open input in read mode
         mov        $SYS_OPEN, %rax
         mov        $in_name, %rdi
         mov        $O_RDONLY, %rsi
         syscall
         mov        %rax, (fd_in)
+
+        # Read
+        mov        $SYS_READ, %rax
+        mov        (fd_in), %rdi
+        mov        $buf, %rsi
+        mov        $buf_len, %rdx
+        syscall
+
+        # System write
+        mov        $SYS_WRITE, %rax
+        mov        (fd_out), %rdi
+        mov        $buf, %rsi
+        mov        $buf_len, %rdx
+        syscall
 
         # Close input file
         mov        $SYS_CLOSE, %rax
