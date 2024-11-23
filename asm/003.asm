@@ -25,6 +25,18 @@ fd_in: .quad 0
 fd_out: .quad 0
 
         .text
+
+clear:
+        xor        %rax, %rax
+        mov        $buf, %rdi
+        jmp        .L1
+.L1:
+        movb       $0, 0(%rdi, %rax, 1)
+        add        $1, %rax
+        cmp        $buf_len, %rax
+        jl         .L1
+        ret
+
 _start:
         # Open output file create mode
         mov        $SYS_OPEN, %rax
@@ -40,6 +52,16 @@ _start:
         mov        $O_RDONLY, %rsi
         syscall
         mov        %rax, (fd_in)
+
+        # Read
+        mov        $SYS_READ, %rax
+        mov        (fd_in), %rdi
+        mov        $buf, %rsi
+        mov        $buf_len, %rdx
+        syscall
+
+        # Clear buffer
+        call       clear
 
         # Read
         mov        $SYS_READ, %rax
