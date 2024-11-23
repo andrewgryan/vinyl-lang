@@ -11,6 +11,8 @@ in_name_len = (. - in_name)
 out_name: .asciz "out.txt"
 out_name_len = (. - out_name)
 
+STDOUT = 0
+
 SYS_READ = 0
 SYS_WRITE = 1
 SYS_OPEN = 2
@@ -66,6 +68,13 @@ _start:
         # System write
         mov        $SYS_WRITE, %rax
         mov        (fd_out), %rdi
+        mov        $buf, %rsi
+        mov        (bytes), %rdx
+        syscall
+
+        # Print
+        mov        $SYS_WRITE, %rax
+        mov        $STDOUT, %rdi
         mov        $buf, %rsi
         mov        (bytes), %rdx
         syscall
