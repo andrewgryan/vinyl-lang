@@ -18,14 +18,21 @@ atoi:
 	xor		%rax, %rax
 	xor		%rcx, %rcx
 	mov		%rdi, %r8
+	xor		%r9, %r9
 	jmp		atoi_L2
 atoi_L1:
 	movzb	(%r8, %rcx, 1), %rdi
+	mov		%r9, %rax
+	mov		$10, %r10d
+	mul		%r10d
+	mov		%rax, %r9
 	call	atod
+	add		%rax, %r9
 	inc		%rcx
 atoi_L2:
 	cmp		%rsi, %rcx
 	jl		atoi_L1
+	mov		%r9, %rax
 	ret
 
 
