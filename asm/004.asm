@@ -1,24 +1,52 @@
 .include "sys.asm"
 .global _start
+
+.data
+	number: .ascii "365"
+	number_len = (. - number)
+
 .text
 
+
 /**
- *	ASCII to Int
+ *  ASCII string to integer
+ *
+ *  %rdi - buffer address
+ *  %rsi - buffer length
  */
 atoi:
+	xor		%rax, %rax
+	xor		%rcx, %rcx
+	mov		%rdi, %r8
+	jmp		atoi_L2
+atoi_L1:
+	movzb	(%r8, %rcx, 1), %rdi
+	call	atod
+	inc		%rcx
+atoi_L2:
+	cmp		%rsi, %rcx
+	jl		atoi_L1
+	ret
+
+
+/**
+ *	ASCII to digit [0-9]
+ */
+atod:
 	mov		%rdi, %rax
 	sub	    $48, %rax
 	cmp		$9, %rax
-	jg		atoi_L1
+	jg		atod_L1
 	cmp		$0, %rax
-	jl		atoi_L1
+	jl		atod_L1
 	ret
-atoi_L1:
+atod_L1:
 	mov		$-1, %rax
 	ret
 
 _start:
-	mov		$46, %rdi
+	mov		$number, %rdi
+	mov		$number_len, %rsi
 	call	atoi
 	mov		%rax, %rdi
 	call	exit
