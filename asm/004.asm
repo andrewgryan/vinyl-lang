@@ -2,7 +2,7 @@
 .global _start
 
 .data
-	number: .ascii "365"
+	number: .ascii "123"
 	number_len = (. - number)
 
 .text
@@ -15,6 +15,7 @@
  *  %rsi - buffer length
  */
 atoi:
+	# TODO: Use stack to preserve local variable
 	xor		%rax, %rax
 	xor		%rcx, %rcx
 	mov		%rdi, %r8
