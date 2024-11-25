@@ -8,6 +8,11 @@
 _start:
 	mov		$number, %rdi
 	mov		$number_len, %rsi
+	call	print
+
+	mov		$number, %rdi
+	mov		$number_len, %rsi
 	call	atoi
+
 	mov		%rax, %rdi
 	call	exit
