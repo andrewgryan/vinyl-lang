@@ -1,4 +1,3 @@
-.include "sys.asm"
 .global _start
 
 .data

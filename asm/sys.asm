@@ -1,3 +1,4 @@
+
 .data
 STDOUT = 0
 
@@ -13,6 +14,12 @@ O_WRONLY = 0x1
 O_RDWR = 0x2
 
 .text
+.global print
+.global close
+.global exit
+.global read
+.global write
+
 /*
  *  Print statement
  *
